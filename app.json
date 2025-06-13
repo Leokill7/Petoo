@@ -21,7 +21,6 @@
       },
       "edgeToEdgeEnabled": true,
       "permissions": [
-        "android.permission.CAMERA",
         "android.permission.CAMERA"
       ],
       "package": "com.anonymous.petoo"
@@ -46,12 +45,18 @@
         "react-native-vision-camera",
         {
           "cameraPermissionText": "$(PRODUCT_NAME) needs access to your Camera.",
-          "enableCodeScanner":true
+          "enableCodeScanner": true
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bf5bce4d-b550-40f8-a121-8d5384d80ef4"
+      }
     }
   }
 }

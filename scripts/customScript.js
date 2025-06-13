@@ -6,7 +6,7 @@ export function getWarningsVariable(json,selectedAnimal){
       case "cat":          
           return getCatWarnings(json)
       case "guinea-pig":          
-          break;
+          return getGuineaPigWarnings(json)
       default:
         break;
     }
@@ -29,6 +29,15 @@ function getDogWarnings(json){
 function getCatWarnings(json){
 
     var warnings = catWarnings
+    warnings.additionalCautions = []
+    warnings.additionalDangers = []
+
+    return warnings
+}
+
+function getGuineaPigWarnings(json){
+
+    var warnings = guineaPigsWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
 
@@ -291,7 +300,7 @@ const catWarnings=
             },{
                 ingredient:"milk",
                 name:"Milk",
-                note:"Milk can cause diarrhea and vomiting"
+                note:"Milk can cause diarrhea and vomiting because many cats are lactose introlerant."
             },{
                 ingredient:"paprika",
                 name:"Paprika",
@@ -328,7 +337,85 @@ const catWarnings=
                 ingredient:"citrus",
                 name:"Citrus",
                 note:"Citrusfruits can lead to diarrhea and vomiting."
+            },{
+                ingredient:"salt",
+                name:"Salt",
+                note:"Too much salt can cause sodium poisoning for cats."
             }
+        ],
+        additionalDangers:[],
+        additionalCautions: []
+    }
+
+const guineaPigsWarnings= 
+  
+    {
+        key:"guineaPig",
+        dangers:[
+            {
+                ingredient:"potatoe",
+                name:"Potatoe",
+                note:"Potatoes as well as potatoe leaves and peels contain solanine which is toxic for guinea pigs."
+            },{
+                ingredient:"onion",
+                name:"Onions",
+                note:"Onions cause blood disorders and gastrointestinal upset for guinea pigs."
+            },{
+                ingredient:"garlic",
+                name:"Garlic",
+                note:"Garlic cause blood disorders and gastrointestinal upset for guinea pigs."
+            },{
+                ingredient:"chive",
+                name:"Chives",
+                note:"Chives cause blood disorders and gastrointestinal upset for guinea pigs."
+            },{
+                ingredient:"leek",
+                name:"Leek",
+                note:"Leek cause blood disorders and gastrointestinal upset for guinea pigs."
+            },{
+                ingredient:"tomato",
+                name:"Tomato",
+                note:"Tomato leaves and stems contain solanine which is toxic for guinea pigs. The fruit itself is okay."
+            },{
+                ingredient:"avocado",
+                name:"Avocado",
+                note:"Avocado contains persin which is toxic for guinea pigs."
+            },{
+                ingredient:"rhubarb",
+                name:"Rhubarb",
+                note:"Rhubarb leaves and stems are highly toxic which can lead to a kidney failure for guinea pigs."
+            },{
+                ingredient:"mushroom",
+                name:"Mushroom",
+                note:"Mushrooms can lead to toxicity pr digestive problems."
+            },{
+                ingredient:"rhubarb",
+                name:"Rhubarb",
+                note:"Rhubarb leaves and stems are highly toxic which can lead to a kidney failure for guinea pigs."
+            },{
+                ingredient:"sugar",
+                name:"Sugar",
+                note:"Sugar is a completly inapropriate diet and toxic for guinea pigs."
+            },{
+                ingredient:"coffee",
+                name:"Coffee",
+                note:"Coffee contains caffeine which causes cardiac arrhythmias and diarrhea. Untreated a small amount of caffeine can lead to death."
+            },{
+                ingredient:"caffeine",
+                name:"Coffee",
+                note:"Caffeine causes cardiac arrhythmias and diarrhea. Untreated a small amount of caffeine can lead to death."
+            },
+        ],
+        cautions:[
+            {
+                ingredient:"iceberg",
+                name:"Iceberg lettuce",
+                note:"Iceberg lettuce is low in nutrients and can cause diarrhea for guinea pigs."
+            },{
+                ingredient:"milk",
+                name:"Milk",
+                note:"Milk can cause diarrhea and vomiting because guinea pigs are lactose introlerant."
+            },
         ],
         additionalDangers:[],
         additionalCautions: []
