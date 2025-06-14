@@ -352,7 +352,8 @@ export default function Home() {
         <View style={styles.logoWrapper}>
           <Image
             source={require('../assets/images/PetooLogo.png')}
-            style={{ width: 160,height:50,resizeMode:"contain"}}
+            style={{ width: 160,height:50}}
+            resizeMode='contain'
           ></Image> 
         </View>
         <TouchableOpacity
