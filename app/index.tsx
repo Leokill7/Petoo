@@ -360,7 +360,7 @@ export default function Home() {
             style={styles.homeButton}
             onPress={toggleDarkMode}
           >
-            <Ionicons name={darkModeActive?"contrast-outline":"sunny"} size={40} color={green1}/>
+            <Ionicons name={darkModeActive?"contrast-outline":"sunny"} size={darkModeActive?35:40} color={green1}/>
           </TouchableOpacity>
         
       </View>
@@ -399,7 +399,7 @@ export default function Home() {
           <>
             {showCamera ? (
               <>
-                <BlurView intensity={20} tint="dark" style={[styles.buttonContainer,{top: 20,left: 20,}]}>
+                <BlurView intensity={40} tint="dark" style={[styles.buttonContainer,{top: 20,left: 20,}]}>
                 
                   <TouchableOpacity
                     style={styles.manualInputSelector}
