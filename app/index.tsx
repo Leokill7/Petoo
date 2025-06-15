@@ -13,7 +13,7 @@ const buttonBorderWidth = 1;
 const buttonBorderColor = "white";
 const buttonBorderRadius = 15
 
-
+//x
 
 export default function Home() {
   const [permission, requestPermission] = useCameraPermissions();
