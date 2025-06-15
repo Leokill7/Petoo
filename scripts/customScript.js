@@ -22,7 +22,12 @@ function getDogWarnings(json){
     if(json.product.nutriments.fat_100g > 25){
         warnings.additionalCautions.push({name:"Fat", note:"The product contains much fat. This can lead to obesity, diarrhea and vomiting."})
     }
-
+    if(isAlcoholic(json)){
+        warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
+    }
+    if(hasLactose(json)){
+        warnings.additionalCautions.push({name:"Lactose",note:"Many dogs are lactose intolerant."})    
+    }
     return warnings
 }
 
@@ -31,7 +36,12 @@ function getCatWarnings(json){
     var warnings = catWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
-
+    if(isAlcoholic(json)){
+            warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
+    }
+    if(hasLactose(json)){
+        warnings.additionalCautions.push({name:"Lactose",note:"Many cats are lactose intolerant."})    
+    }
     return warnings
 }
 
@@ -40,9 +50,38 @@ function getGuineaPigWarnings(json){
     var warnings = guineaPigsWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
+    if(isAlcoholic(json)){
+            warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
+    }
 
+    if(hasLactose(json)){
+        warnings.additionalCautions.push({name:"Lactose",note:"Guinea pigs are lactose intolerant."})    
+    }
     return warnings
 }
+
+function isAlcoholic(json){
+    categoriesString = ""
+    for(var  i = 0; i < json.product.categories_tags.length;i++){
+        categoriesString = categoriesString + json.product.categories_tags[i]
+    }
+
+    if((categoriesString.includes("alcoholic-beverages")||categoriesString.includes("alcoholic")||categoriesString.includes("wines"))&& categoriesString.includes("!non-alcoholic-beverages")){
+        return true;
+    }
+}
+
+function hasLactose(json){
+    categoriesString = ""
+    for(var  i = 0; i < json.product.categories_tags.length;i++){
+        categoriesString = categoriesString + json.product.categories_tags[i]
+    }
+
+    if((categoriesString.includes("dairy")||categoriesString.includes("dairies")) && !categoriesString.includes("dairy-substitutes")){
+        return true;
+    }
+}
+
 
 const dogWarnings= 
   
@@ -61,10 +100,6 @@ const dogWarnings=
                 ingredient:"theobromin",
                 name:"Theobromin",
                 note:"Theobromin causes cardiac arrhythmias, shortness of breath and diarrhea"
-            },{
-                ingredient:"alcohol",
-                name:"Alcohol",
-                note:"Alcohol can cause dogs to vomit, shortness of breath and coordination problems."
             },{
                 ingredient:"tomato",
                 name:"Tomatos",
@@ -149,10 +184,6 @@ const dogWarnings=
                 name:"Avocado",
                 note:"Avocado contains persin which causes breathing problems and heart muscle weakness for dogs."
             },{
-                ingredient:"milk",
-                name:"Milk",
-                note:"Milk can cause diarrhea and vomiting"
-            },{
                 ingredient:"paprika",
                 name:"Paprika",
                 note:"Especially feeding green paprika in high volumes can cause breathing disorders, diarrhea and vomiting. The danger is reduced by cooking paprika."
@@ -188,14 +219,6 @@ const dogWarnings=
                 ingredient:"mandarin",
                 name:"Mandarin",
                 note:"Mandarins can lead to diarrhea and vomiting."
-            },{
-                ingredient:"mandarin",
-                name:"Mandarin",
-                note:"Mandarins can lead to diarrhea and vomiting."
-            },{
-                ingredient:"mandarin",
-                name:"Mandarin",
-                note:"Mandarins can lead to diarrhea and vomiting."
             }
         ],
         additionalDangers:[],
@@ -218,10 +241,6 @@ const catWarnings=
                 ingredient:"theobromin",
                 name:"Theobromin",
                 note:"Theobromin causes cardiac arrhythmias, shortness of breath and diarrhea"
-            },{
-                ingredient:"alcohol",
-                name:"Alcohol",
-                note:"Alcohol can cause cats to vomit, shortness of breath and coordination problems."
             },{
                 ingredient:"onion",
                 name:"Onions",
@@ -297,10 +316,6 @@ const catWarnings=
                 ingredient:"avocado",
                 name:"Avocado",
                 note:"Avocado contains persin which causes breathing problems and heart muscle weakness for cats."
-            },{
-                ingredient:"milk",
-                name:"Milk",
-                note:"Milk can cause diarrhea and vomiting because many cats are lactose introlerant."
             },{
                 ingredient:"paprika",
                 name:"Paprika",
@@ -411,10 +426,6 @@ const guineaPigsWarnings=
                 ingredient:"iceberg",
                 name:"Iceberg lettuce",
                 note:"Iceberg lettuce is low in nutrients and can cause diarrhea for guinea pigs."
-            },{
-                ingredient:"milk",
-                name:"Milk",
-                note:"Milk can cause diarrhea and vomiting because guinea pigs are lactose introlerant."
             },
         ],
         additionalDangers:[],

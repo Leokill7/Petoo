@@ -1,5 +1,4 @@
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
 import { useRef, useState,useEffect } from 'react';
@@ -191,19 +190,21 @@ export default function Home() {
       overflow: 'hidden',
     },
     manualInputSelector: {
-      flex: 1,
+      top: 20,left: 20,
+      position: 'absolute',
+      zIndex:10,
+      padding: 7,
       borderRadius: 999,
-      borderWidth: 2,
-      borderColor: 'white',
       justifyContent: 'center',
       alignItems: 'center',
+      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
     },
     cameraDirectionSwitcher: {
+      top: 20,right: 20,
       position: 'absolute',
       padding: 7,
-      zIndex: 10,
-      borderColor:"white", 
-      borderWidth: 2,   
+      zIndex: 10,  
+      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
       borderRadius: 999,
     },
     cameraInputSelector: {
@@ -212,9 +213,7 @@ export default function Home() {
       left: 20,
       padding: 7,
       zIndex: 10,
-      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF",
-      borderColor:darkModeActive?"#5a5a5a":"#FFFFFF", 
-      borderWidth: 2,   
+      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
       borderRadius: 999,
     },
     homeButton: {
@@ -230,6 +229,7 @@ export default function Home() {
       zIndex: 10,
       borderRadius:999,
       borderWidth:1,
+      alignItems: 'center',
       borderColor:green2,
       backgroundColor:mainDisplaybackgroundColor
     },
@@ -398,16 +398,13 @@ export default function Home() {
         {scanning ? (
           <>
             {showCamera ? (
-              <>
-                <BlurView intensity={40} tint="dark" style={[styles.buttonContainer,{top: 20,left: 20,}]}>
-                
+              <> 
                   <TouchableOpacity
-                    style={styles.manualInputSelector}
+                    style={[styles.manualInputSelector,{}]}
                     onPress={() => setShowCamera(false)}
                   >
-                    <Ionicons name="search-outline" size={30} color="white" />
+                    <Ionicons name="search" size={30} color={green1} />
                   </TouchableOpacity>
-                </BlurView>
                 {permission?.granted?(
                   <>
                     <CameraView
@@ -416,15 +413,12 @@ export default function Home() {
                       style={styles.camera}
                       videoStabilizationMode="standard"
                     />       
-                    <BlurView intensity={20} tint="dark" style={[styles.buttonContainer,{top: 20,right: 20,}]}>
-                    
                       <TouchableOpacity
                         style={styles.cameraDirectionSwitcher}
                         onPress={() => setCamDirection(cam === 'back' ? 'front' : 'back')}
                       >
-                        <Ionicons name="camera-reverse-outline" size={30} color="white" />
+                        <Ionicons name="camera-reverse" size={30} color={green1} />
                       </TouchableOpacity>     
-                    </BlurView>
                   </>
                 ):(
                   <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
@@ -461,7 +455,7 @@ export default function Home() {
                   }}      
                   style={{marginLeft:10}}         
                   >
-                    <Ionicons name="search-outline" size={27} style={styles.manualInputButton}></Ionicons>
+                    <Ionicons name="search" size={27} style={styles.manualInputButton}></Ionicons>
                   </Pressable>
                 </View>
               </>
