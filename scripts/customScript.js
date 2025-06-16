@@ -10,15 +10,15 @@ export function getWarningsVariable(json,selectedAnimal){
       default:
         break;
     }
-  }
+}
 
 
 
 function getDogWarnings(json){
-
     var warnings = dogWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
+    warnings.notes = []
     if(json.product.nutriments.fat_100g > 25){
         warnings.additionalCautions.push({name:"Fat", note:"The product contains much fat. This can lead to obesity, diarrhea and vomiting."})
     }
@@ -36,12 +36,29 @@ function getCatWarnings(json){
     var warnings = catWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
+    warnings.notes = []
     if(isAlcoholic(json)){
-            warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
+        warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
     if(hasLactose(json)){
         warnings.additionalCautions.push({name:"Lactose",note:"Many cats are lactose intolerant."})    
     }
+
+    var vegeterian = isVegeterian(json)
+    
+    var catergoriesString = ""
+    for(var i = 0; i < json.product.categories_hierarchy.length;i++){
+        catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
+    }
+
+    if(catergoriesString.includes("beverages") == false){
+        if(vegeterian === true){
+            warnings.additionalCautions.push({name:"Vegetarian",note:"Cats are carnivores and should not be fed vegetarian food."})    
+        }else if(vegeterian === null){
+            warnings.notes.push({note:"Vegetarian status not found!"})
+        }
+    }
+    
     return warnings
 }
 
@@ -50,13 +67,29 @@ function getGuineaPigWarnings(json){
     var warnings = guineaPigsWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
+    warnings.notes = []
     if(isAlcoholic(json)){
-            warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
+        warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
 
     if(hasLactose(json)){
         warnings.additionalCautions.push({name:"Lactose",note:"Guinea pigs are lactose intolerant."})    
     }
+
+    var catergoriesString = ""
+    for(var i = 0; i < json.product.categories_hierarchy.length;i++){
+        catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
+    }
+
+    if(!catergoriesString.includes("beverage")){
+        var vegeterian = isVegeterian(json)
+        if(vegeterian === false){
+            warnings.additionalDangers.push({name:"Meat",note:"Guinea pigs are hebrivores and should not eat meat."})    
+        }else if(vegeterian === null){
+            warnings.notes.push({note:"Vegetarian status not found"})
+        }
+    }
+
     return warnings
 }
 
@@ -69,6 +102,29 @@ function isAlcoholic(json){
     if((categoriesString.includes("alcoholic-beverages")||categoriesString.includes("alcoholic")||categoriesString.includes("wines"))&& categoriesString.includes("!non-alcoholic-beverages")){
         return true;
     }
+    return false;
+}
+
+function isVegeterian(json){
+    categoriesString = ""
+
+    if(!json.product.ingredients_analysis_tags){
+        return null
+    }
+
+    for(var  i = 0; i < json.product.ingredients_analysis_tags.length;i++){
+        categoriesString = categoriesString + json.product.ingredients_analysis_tags[i]
+    }
+
+    if(categoriesString.includes("non-vegetarian")){
+        return false
+    }else if(categoriesString.includes("vegetarian-status-unknown")){
+        return null
+    }
+    else if(categoriesString.includes("vegetarian")){
+        return true
+    }
+    return null;
 }
 
 function hasLactose(json){
@@ -80,6 +136,7 @@ function hasLactose(json){
     if((categoriesString.includes("dairy")||categoriesString.includes("dairies")) && !categoriesString.includes("dairy-substitutes")){
         return true;
     }
+    return false;
 }
 
 
@@ -222,7 +279,8 @@ const dogWarnings=
             }
         ],
         additionalDangers:[],
-        additionalCautions: []
+        additionalCautions: [],
+        notes:[]
     }
 const catWarnings= 
   
@@ -359,7 +417,8 @@ const catWarnings=
             }
         ],
         additionalDangers:[],
-        additionalCautions: []
+        additionalCautions: [],
+        notes:[]
     }
 
 const guineaPigsWarnings= 
@@ -429,5 +488,6 @@ const guineaPigsWarnings=
             },
         ],
         additionalDangers:[],
-        additionalCautions: []
+        additionalCautions: [],
+        notes:[]
     }
