@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
 import { useRef, useState,useEffect } from 'react';
-import { Linking, Platform,Alert,Modal,ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
+import { Switch,Linking, Platform,Alert,Modal,ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -34,10 +34,18 @@ export default function Home() {
   var [isLoadingData, setIsLoadingData] = useState(false) 
   var [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false) 
   var [detailsVisible, setDetailsVisible] = useState(false)
+  var [settingsVisible, setSettingsVisible] = useState(false)
   var [donationsVisible, setDonationsVisible] = useState(false)
   var [currentManualCode, setCurrentManualCode] = useState("")
   var [darkModeActive,setDarkMode] = useState(useColorScheme()==="dark")
   const currentScannedCode = useRef("");
+
+
+  var [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
+  var [customPetName, setCustomPetName] = useState("")
+  var [customePetTypeSelectionVisible, setCustomePetTypeSelectionVisible] = useState(false)
+  var [customePetType, setCustomePetType] = useState("")
+  var [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
 
 
   var [green1, setGreen1] = useState("#9AB286");
@@ -701,7 +709,7 @@ export default function Home() {
           <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);currentScannedCode.current = "";setCurrentManualCode("");setDetailsVisible(false)}}>
             <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>{scanning ? "Cancel" : "Scan Barcode"}</Text>
           </Pressable>
-          <Pressable  style={[styles.settingsButton,{right:10}]} onPress={() => {}}>
+          <Pressable  style={[styles.settingsButton,{right:10}]} onPress={() => {setSettingsVisible(true)}}>
             <Ionicons name="settings" size={27} color={"#FFFFFF"} />
           </Pressable>
       </View>
@@ -727,6 +735,73 @@ export default function Home() {
             />
           </View>
           <Pressable  style={{height:"8%",backgroundColor:green1,borderTopWidth:3,borderColor:"#415947",width:"100%",alignItems:"center",paddingTop:8}} onPress={() => {setDonationsVisible(false)}}>
+            <Text style={{height:"auto", fontSize:30}}>Close</Text>
+          </Pressable>
+        </View>
+      </Modal>
+      <Modal
+        visible={settingsVisible}
+        animationType="slide"
+        onRequestClose={() => setDonationsVisible(false)} // Android back button
+      >
+        <View style={{flex: 1,backgroundColor: '#00000088',alignItems: 'center',}}>
+          <View style={{height:"7%"}}></View>
+          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: 'white'}}>
+            <Text style={styles.productTitleText}>Settings</Text>
+            <Text>Custom Pet</Text>
+            <View style={{flexDirection:"row"}}>
+              <Text>Select Pet type</Text>
+              <DropDownPicker
+                open={customePetTypeSelectionVisible}
+                value={customePetType}
+                items={petTypes}
+                setOpen={setCustomePetTypeSelectionVisible}
+                setValue={setCustomePetType}
+                setItems={setSelectableAnimals}
+                placeholder="Pet type"
+                listMode="SCROLLVIEW"
+                style={[styles.animalSelectDropdown,{borderColor: selectedAnimal?green2:"#C4C4C4",}]}
+                textStyle={{color:green2,fontSize:25,fontWeight:600}}
+                placeholderStyle={{ fontWeight: 600 , color: "#C4C4C4" }}
+                dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?green2:"#C4C4C4"}]}
+                showTickIcon={false}
+                ArrowDownIconComponent={({ style }) => (
+                  <Ionicons name="caret-down" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
+                )}
+                ArrowUpIconComponent={({ style }) => (
+                  <Ionicons name="caret-up" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
+                )}
+                onChangeValue={(value)=>{
+                  
+                }}
+                >
+              </DropDownPicker>
+            </View>
+            <View style={{flexDirection:"row"}}>
+              <Text>Select Name</Text>
+              <TextInput
+              style={{width:100,height:20, backgroundColor:"black"}}
+                placeholderTextColor="#aaa"                    
+                value={customPetName}
+                onChangeText={setCustomPetName}
+              />
+            </View>
+            <View style={{flexDirection:"row"}}>
+              <Text>Is lactose intolerant</Text>
+              <Switch
+                value={isLactoseIntolerantSelected}
+                onValueChange={setIsLactoseIntolerantSelected}
+              />
+            </View>
+            <Pressable onPress={()=>{}}>
+              <Text style={{ color: 'blue'}}>Create pet</Text>
+            </Pressable>
+            
+            <Pressable onPress={() => Linking.openURL('https://leonard-arnold.site/petoo/Petoo_Privacy_Policy.pdf')}>
+              <Text style={{ color: 'blue'}}>Visit our website</Text>
+            </Pressable>
+          </View>
+          <Pressable  style={{height:"8%",backgroundColor:green1,borderTopWidth:3,borderColor:"#415947",width:"100%",alignItems:"center",paddingTop:8}} onPress={() => {setSettingsVisible(false)}}>
             <Text style={{height:"auto", fontSize:30}}>Close</Text>
           </Pressable>
         </View>
