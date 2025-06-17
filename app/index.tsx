@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
 import { useRef, useState,useEffect } from 'react';
-import { Modal,ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
+import { Linking, Platform,Alert,Modal,ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -46,9 +46,9 @@ export default function Home() {
   var [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
   var [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
 
-  const toggleDarkMode = () => {
+  const toggleDarkMode = (willBeActive: boolean) => {
 
-    if(!darkModeActive){
+    if(willBeActive){
       setGreen2("#528b5f")
       setMainDisplaybackgroundColor("#343434")
       setBackgroundColor("#3D403E")
@@ -59,8 +59,8 @@ export default function Home() {
       setBackgroundColor("#F1F1F1")
       setTextColor("#686868")
     }
-    SecureStore.setItemAsync('darkMode', JSON.stringify(!darkModeActive));
-    setDarkMode(!darkModeActive)
+    SecureStore.setItemAsync('darkMode', JSON.stringify(willBeActive));
+    setDarkMode(willBeActive)
   }
 
   useEffect(() => {
@@ -69,11 +69,23 @@ export default function Home() {
         const storedMode = await SecureStore.getItemAsync('darkMode');
         if (storedMode !== null) {
           const parsed = JSON.parse(storedMode);
-          setDarkMode(parsed);
+          toggleDarkMode(parsed)
+        }
+      } catch (e) {}
+    };
+    const loadAnimal = async () => {
+      try {
+        const storedMode = await SecureStore.getItemAsync('selectedItem');
+        if (storedMode !== null) {
+          const parsed = JSON.parse(storedMode);
+          if(parsed != ""){
+            setSelectedAnimal(parsed);
+          } 
         }
       } catch (e) {}
     };
     loadTheme()
+    loadAnimal()
     if (!permission?.granted) {
       requestPermission();
     }
@@ -175,9 +187,30 @@ export default function Home() {
           alert("The ingredients could not be found");
         }       
       } else {
-       alert('No Product found.\n Make sure you scanned an eadable Product?');
+        Alert.alert(
+        "Product not found",
+        "No Product found.\nDo you want to add the product to the Database?",
+        [
+          {
+            text: "Cancle",
+            style: "cancel" // makes the button look like a cancel action
+          },
+          {
+            text: "Yes",
+            onPress: () => {
+              const appStoreUrl = "https://apps.apple.com/us/app/open-food-facts-product-scan/id588797948"; // Replace with your app's App Store ID
+              const playStoreUrl = "https://play.google.com/store/apps/details?id=org.openfoodfacts.scanner"; // Replace with your package name
+
+              const url = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
+
+              Linking.openURL(url).catch((err) =>
+              console.error("Couldn't load page", err)
+            );}
+          }
+        ],
+        { cancelable: true }
+      );
       }
-      
     }else if(selectedAnimal == ""){
       alert("Select a pet");
     } 
@@ -400,7 +433,7 @@ export default function Home() {
         </View>
         <TouchableOpacity
             style={styles.homeButton}
-            onPress={toggleDarkMode}
+            onPress={() => toggleDarkMode(!darkModeActive)}
           >
             <Ionicons name={darkModeActive?"contrast-outline":"sunny"} size={darkModeActive?35:40} color={green1}/>
           </TouchableOpacity>
@@ -430,6 +463,7 @@ export default function Home() {
           )}
           onChangeValue={(value)=>{
             setSelectedAnimal(value?value:"")
+            SecureStore.setItemAsync('selectedItem', JSON.stringify(selectedAnimal));
             getJSON()
           }}
           >
@@ -576,7 +610,7 @@ export default function Home() {
                           <View style={{flex:1,justifyContent:"space-between",paddingBottom:50}}>
                             <View style={{ flexDirection: 'row' }}>
                               {!dangersViewEmpty&&
-                                (<View style={{ width: cautionsViewEmpty?'100%':"47%" }}>
+                                (<View style={{ width:"47%" }}>
                                   <View style={{flexDirection:"row"}}>
                                     <View style={{backgroundColor:"#D27777",borderRadius:5,marginRight:5}}>
                                       <Ionicons name="close" size={28} color="#FFFFFF"/>
@@ -597,7 +631,7 @@ export default function Home() {
                                 (<View style={{width:"6%"}}></View>)
                               }
                               {!cautionsViewEmpty&&
-                                (<View style={{ width: dangersViewEmpty?'100%':"47%"}}>
+                                (<View style={{ width:"47%"}}>
                                   <View style={{flexDirection:"row"}}>
                                     <View style={{backgroundColor:"#F1CB61",borderRadius:5,marginRight:5}}>
                                       <Ionicons name="alert" size={28} color="#FFFFFF"/>
@@ -619,7 +653,7 @@ export default function Home() {
                               <View></View>
                               :
                               <View>
-                                <Text style={[styles.disclaimerText,{fontSize:18,fontWeight:600}]}>Notes</Text>
+                                <Text style={[styles.disclaimerText,{fontSize:18,fontWeight:600}]}>Note</Text>
                                 {notesView.map((item, index) => (
                                       <Text key={index} style={styles.disclaimerText}>
                                         {item}
