@@ -9,6 +9,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { getWarningsVariable } from '../scripts/customScript';
 import * as SecureStore from 'expo-secure-store';
 import { WebView } from 'react-native-webview';
+import Toast, { BaseToast, ErrorToast , ToastProps } from 'react-native-toast-message';
 
 const buttonBorderWidth = 1;
 const buttonBorderRadius = 15
@@ -20,7 +21,7 @@ export default function Home() {
   const [showCamera, setShowCamera] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState("");
   const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
-  const [selectableAnimals, setSelectableAnimals] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}]);
+  const [selectableAnimals, setSelectableAnimals] = useState([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
   var [ingredientsFound, setIngredientsFound] = useState(false)
   var [productNameView, setProductNameView] = useState(<></>);
   var [dangersView, setDangersView] = useState<string[]>([]);
@@ -40,19 +41,41 @@ export default function Home() {
   var [darkModeActive,setDarkMode] = useState(useColorScheme()==="dark")
   const currentScannedCode = useRef("");
 
+  var persistentDataLoaded = useRef(false)
+
 
   var [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
   var [customPetName, setCustomPetName] = useState("")
   var [customePetTypeSelectionVisible, setCustomePetTypeSelectionVisible] = useState(false)
-  var [customePetType, setCustomePetType] = useState("")
+  var [customPetType, setCustomPetType] = useState("")
   var [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
 
+  var [deletePetTypeSelectionVisible, setDeletePetTypeSelectionVisible] = useState(false)
+  var [deletePetType, setDeletePetType] = useState("")
 
   var [green1, setGreen1] = useState("#9AB286");
   var [green2, setGreen2] = useState(darkModeActive?"#528b5f":"#47614d");
   var [backgroundColor, setBackgroundColor] = useState(darkModeActive?"#3D403E":"#F1F1F1");
   var [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
   var [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
+
+  const toastConfig = {
+  success: (props: ToastProps) => (
+    <BaseToast
+      {...props}
+      style={{ borderLeftColor: green1 ,backgroundColor: mainDisplaybackgroundColor,height:80}}
+      text1Style={{fontSize: 18,fontWeight:700,color:textColor,paddingBottom:10}}
+      text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
+    />
+  ),
+  error: (props: ToastProps) => (
+    <ErrorToast 
+      {...props}
+      style={{ borderLeftColor: 'red',backgroundColor: mainDisplaybackgroundColor,height:80}}
+      text1Style={{fontSize: 18,fontWeight:700,color:textColor,paddingBottom:10}}
+      text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
+    />
+  )}
 
   const toggleDarkMode = (willBeActive: boolean) => {
 
@@ -69,6 +92,10 @@ export default function Home() {
     }
     SecureStore.setItemAsync('darkMode', JSON.stringify(willBeActive));
     setDarkMode(willBeActive)
+  }
+
+  const getAnimalObject = () => {
+    return Object.values(selectableAnimals).find((item) => item["value"] === selectedAnimal);
   }
 
   useEffect(() => {
@@ -92,16 +119,32 @@ export default function Home() {
         }
       } catch (e) {}
     };
-    loadTheme()
-    loadAnimal()
+    const loadSelectableAnimals = async () => {
+      try {
+        const storedMode = await SecureStore.getItemAsync('selectableAnimals');
+        if (storedMode !== null) {
+          const parsed = JSON.parse(storedMode);
+          if(parsed != ""){
+            setSelectableAnimals(parsed);
+          } 
+        }
+      } catch (e) {}
+    };
+    const loadData = async () => {
+      await loadAnimal()
+      loadSelectableAnimals()
+      loadTheme()
+      persistentDataLoaded.current = true;
+    }
+    loadData()
     if (!permission?.granted) {
       requestPermission();
     }
+    
   }, []);
 
   const getJSON = async () => {
     setIsLoadingData(true)
-
     if((currentScannedCode.current || currentManualCode) && selectedAnimal){
       var code = ""
       if(currentScannedCode.current){
@@ -130,7 +173,10 @@ export default function Home() {
           ingredientsTagsCollection = ingredientsTagsCollection + " " + (json.product.ingredients_text_en)
           ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
 
-          const warnings = getWarningsVariable(json,selectedAnimal)
+          var animal = getAnimalObject()
+
+          const warnings = getWarningsVariable(json,animal)
+       
           if(warnings){
             var dangersNames: (string)[] = []
             var dangersDetails = []
@@ -219,7 +265,7 @@ export default function Home() {
         { cancelable: true }
       );
       }
-    }else if(selectedAnimal == ""){
+    }else if(selectedAnimal == "" && persistentDataLoaded.current){
       alert("Select a pet");
     } 
     setIsLoadingData(false)     
@@ -333,7 +379,7 @@ export default function Home() {
       borderColor:"#959595",
       borderWidth:buttonBorderWidth,
       borderRadius:buttonBorderRadius,
-      color: "black",
+      color: textColor,
       padding:11,
       textAlign:"center"
     },
@@ -410,7 +456,13 @@ export default function Home() {
       left: 0,
       right: 0,
       alignItems: 'center',
-    },
+    },petCreationSubHeader:{
+      color:textColor,
+      fontSize: 19,
+      fontWeight: 600,
+      alignSelf:"flex-end",
+      marginRight: 10
+    }
   });
 
   return (
@@ -530,6 +582,7 @@ export default function Home() {
                     placeholderTextColor="#aaa"                    
                     style={styles.textInputManual}
                     value={currentManualCode}
+                    autoCorrect={false}
                     onChangeText={(text) => {setCurrentManualCode(text)}}
                   />
                   <Pressable onPress={() => {
@@ -618,7 +671,7 @@ export default function Home() {
                           <View style={{flex:1,justifyContent:"space-between",paddingBottom:50}}>
                             <View style={{ flexDirection: 'row' }}>
                               {!dangersViewEmpty&&
-                                (<View style={{ width:"47%" }}>
+                                (<View style={{ width:cautionsViewEmpty?"96%":"47%" }}>
                                   <View style={{flexDirection:"row"}}>
                                     <View style={{backgroundColor:"#D27777",borderRadius:5,marginRight:5}}>
                                       <Ionicons name="close" size={28} color="#FFFFFF"/>
@@ -639,7 +692,7 @@ export default function Home() {
                                 (<View style={{width:"6%"}}></View>)
                               }
                               {!cautionsViewEmpty&&
-                                (<View style={{ width:"47%"}}>
+                                (<View style={{ width:dangersViewEmpty?"96%":"47%"}}>
                                   <View style={{flexDirection:"row"}}>
                                     <View style={{backgroundColor:"#F1CB61",borderRadius:5,marginRight:5}}>
                                       <Ionicons name="alert" size={28} color="#FFFFFF"/>
@@ -713,7 +766,6 @@ export default function Home() {
             <Ionicons name="settings" size={27} color={"#FFFFFF"} />
           </Pressable>
       </View>
-      
       <Modal
         visible={donationsVisible}
         animationType="slide"
@@ -744,72 +796,185 @@ export default function Home() {
         animationType="slide"
         onRequestClose={() => setDonationsVisible(false)} // Android back button
       >
+        <Toast />
         <View style={{flex: 1,backgroundColor: '#00000088',alignItems: 'center',}}>
           <View style={{height:"7%"}}></View>
-          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: 'white'}}>
-            <Text style={styles.productTitleText}>Settings</Text>
-            <Text>Custom Pet</Text>
-            <View style={{flexDirection:"row"}}>
-              <Text>Select Pet type</Text>
-              <DropDownPicker
-                open={customePetTypeSelectionVisible}
-                value={customePetType}
-                items={petTypes}
-                setOpen={setCustomePetTypeSelectionVisible}
-                setValue={setCustomePetType}
-                setItems={setSelectableAnimals}
-                placeholder="Pet type"
-                listMode="SCROLLVIEW"
-                style={[styles.animalSelectDropdown,{borderColor: selectedAnimal?green2:"#C4C4C4",}]}
-                textStyle={{color:green2,fontSize:25,fontWeight:600}}
-                placeholderStyle={{ fontWeight: 600 , color: "#C4C4C4" }}
-                dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?green2:"#C4C4C4"}]}
-                showTickIcon={false}
-                ArrowDownIconComponent={({ style }) => (
-                  <Ionicons name="caret-down" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
-                )}
-                ArrowUpIconComponent={({ style }) => (
-                  <Ionicons name="caret-up" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
-                )}
-                onChangeValue={(value)=>{
-                  
-                }}
-                >
-              </DropDownPicker>
+          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: backgroundColor}}>
+            <View style={{alignItems:"center",margin:20}}>
+              <Text style={styles.productTitleText}>Settings</Text>
             </View>
-            <View style={{flexDirection:"row"}}>
-              <Text>Select Name</Text>
-              <TextInput
-              style={{width:100,height:20, backgroundColor:"black"}}
-                placeholderTextColor="#aaa"                    
-                value={customPetName}
-                onChangeText={setCustomPetName}
-              />
-            </View>
-            <View style={{flexDirection:"row"}}>
-              <Text>Is lactose intolerant</Text>
-              <Switch
-                value={isLactoseIntolerantSelected}
-                onValueChange={setIsLactoseIntolerantSelected}
-              />
-            </View>
-            <Pressable onPress={()=>{}}>
-              <Text style={{ color: 'blue'}}>Create pet</Text>
-            </Pressable>
             
-            <Pressable onPress={() => Linking.openURL('https://leonard-arnold.site/petoo/Petoo_Privacy_Policy.pdf')}>
-              <Text style={{ color: 'blue'}}>Visit our website</Text>
+            <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
+              <View style={{width:"94%",backgroundColor:mainDisplaybackgroundColor, padding:5, borderRadius:15,margin:"3%"}}>
+                <View>
+                  <View style={{flexDirection:"row",alignItems:"center", margin:10}}>                  
+                    
+                  <View style={{width:"50%",alignItems:"center"}}>
+                    <Text style={styles.petCreationSubHeader}>Pet type:</Text>
+                  </View>
+                  <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
+                    <DropDownPicker
+                      open={customePetTypeSelectionVisible}
+                      value={customPetType}
+                      items={petTypes}
+                      setOpen={setCustomePetTypeSelectionVisible}
+                      setValue={setCustomPetType}
+                      setItems={setPetTypes}
+                      placeholder="Pet type"
+                      listMode="SCROLLVIEW"
+                      style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      textStyle={{color:green2,fontSize:20,fontWeight:600}}
+                      placeholderStyle={{ fontWeight: 600 , color: "#999999" }}
+                      dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      showTickIcon={false}
+                      ArrowDownIconComponent={({ style }) => (
+                        <Ionicons name="caret-down" size={20} color={customPetType?green2:"#999999"}/>
+                      )}
+                      ArrowUpIconComponent={({ style }) => (
+                        <Ionicons name="caret-up" size={20} color={customPetType?green2:"#999999"}/>
+                      )}
+                      >
+                    </DropDownPicker>
+                  </View>
+                </View>
+                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
+                  <View style={{width:"50%",alignItems:"center"}}>
+                    <Text style={styles.petCreationSubHeader}>Pet name:</Text>
+                  </View>
+                  <View style={{width:"50%"}}>
+                    <TextInput
+                      autoCorrect={false}
+                      style={[styles.textInputManual,{width:"auto",borderColor:"#999999"}]}
+                      placeholderTextColor="#aaa"                    
+                      value={customPetName}
+                      onChangeText={setCustomPetName}
+                    />
+                  </View>
+                </View>
+                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
+                  <View style={{width:"50%",alignItems:"center"}}>
+                    <Text style={styles.petCreationSubHeader}>Lactose intolerant:</Text>
+                  </View>
+                  <View style={{width:"50%",alignItems:"center"}}>
+                    <Switch
+                      value={isLactoseIntolerantSelected}
+                      onValueChange={setIsLactoseIntolerantSelected}
+                      trackColor={{ false: backgroundColor, true: green1 }}
+                    />
+                  </View>
+                </View>
+                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
+                  <View style={{width:"50%",alignItems:"center"}}></View>
+                  <View style={{width:"50%",alignItems:"center"}}>
+                    <Pressable  style={styles.scanningButton}  onPress={()=>{
+                      if(customPetName !== ""){
+                        setSelectableAnimals(prevAnimals => [
+                          ...prevAnimals,
+                          { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }
+                        ]);
+                        setIsLactoseIntolerantSelected(false)
+                        setCustomPetName("")
+                        setCustomPetType("")
+                        SecureStore.setItemAsync('selectableAnimals', JSON.stringify(selectableAnimals));
+                        Toast.show({
+                        type: 'success',
+                        text1: 'Success',
+                        text2: 'Pet "'+customPetName+'" was created.',
+                      });
+                      }else{
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error',
+                          text2: 'No pet name given.',
+                        });
+                      }
+                    }}>
+                      <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Create Pet</Text>
+                    </Pressable>
+                  </View>
+                </View>
+              </View>
+              
+            </View> 
+            <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
+            <View style={{width:"94%",backgroundColor:mainDisplaybackgroundColor, padding:5, borderRadius:15,margin:"3%"}}>
+              <View style={{flexDirection:"row",alignItems:"center", margin:10}}>                  
+                  
+                <View style={{width:"50%",alignItems:"center"}}>
+                  <Text style={styles.petCreationSubHeader}>Pet:</Text>
+                </View>
+                <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
+                  <DropDownPicker
+                    open={deletePetTypeSelectionVisible}
+                    value={deletePetType}
+                    items={selectableAnimals}
+                    setOpen={setDeletePetTypeSelectionVisible}
+                    setValue={setDeletePetType}
+                    setItems={setSelectableAnimals}
+                    placeholder="Pet"
+                    listMode="SCROLLVIEW"
+                    style={[styles.animalSelectDropdown,{borderColor: deletePetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                    textStyle={{color:green2,fontSize:20,fontWeight:600}}
+                    placeholderStyle={{ fontWeight: 600 , color: "#999999" }}
+                    dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: deletePetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                    showTickIcon={false}
+                    ArrowDownIconComponent={({ style }) => (
+                      <Ionicons name="caret-down" size={20} color={deletePetType?green2:"#999999"}/>
+                    )}
+                    ArrowUpIconComponent={({ style }) => (
+                      <Ionicons name="caret-up" size={20} color={deletePetType?green2:"#999999"}/>
+                    )}
+                    >
+                  </DropDownPicker>
+                </View>
+              </View>
+              <View style={{flexDirection:"row",alignItems:"center"}}>
+                <View style={{width:"50%",alignItems:"center"}}>
+                  <Text style={styles.petCreationSubHeader}>Pet type:</Text>
+                </View>
+                <View style={{width:"50%",alignItems:"center"}}>
+                  <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>{Object.values(selectableAnimals).find((item) => item["value"] === deletePetType)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetType)?.type.slice(1)}</Text>
+                </View>
+              </View>
+              <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
+                <View style={{width:"50%",alignItems:"center"}}></View>
+                <View style={{width:"50%",alignItems:"center"}}>
+                  <Pressable  style={styles.scanningButton}  onPress={()=>{
+                    if(deletePetType !== ""){
+                      setSelectableAnimals( () => {return selectableAnimals.filter(item => item.value !== deletePetType)});
+                      SecureStore.setItemAsync('selectableAnimals', JSON.stringify(selectableAnimals));
+                      Toast.show({
+                        type: 'success',
+                        text1: 'Success',
+                        text2: 'Animal deleted.',
+                      });
+                      setDeletePetType("")
+                    }else{
+                      Toast.show({
+                        type: 'error',
+                        text1: 'Error',
+                        text2: 'No pet selected to delete.',
+                      });
+                    }
+                      
+                  }}>
+                    <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Delete Pet</Text>
+                  </Pressable>
+                </View>
+              </View>
+            </View> 
+            <Pressable style={{position:"absolute",bottom:5,left:5}} onPress={() => Linking.openURL('https://leonard-arnold.site/petoo/Petoo_Privacy_Policy.pdf')}>
+              <Text style={{ color:"#959595",padding:10}}>Privacy Policy</Text>
             </Pressable>
           </View>
           <Pressable  style={{height:"8%",backgroundColor:green1,borderTopWidth:3,borderColor:"#415947",width:"100%",alignItems:"center",paddingTop:8}} onPress={() => {setSettingsVisible(false)}}>
             <Text style={{height:"auto", fontSize:30}}>Close</Text>
           </Pressable>
         </View>
+        <Toast config={toastConfig}/>
       </Modal>
     </SafeAreaView>
   </View>
 </SafeAreaProvider>
   );
-
-  
 }

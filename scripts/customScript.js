@@ -1,12 +1,12 @@
-export function getWarningsVariable(json,selectedAnimal){
+export function getWarningsVariable(json,selectedAnimalObject){
 
-    switch (selectedAnimal) {
+    switch (selectedAnimalObject.type) {
       case "dog":
-        return getDogWarnings(json);
+        return getDogWarnings(json,selectedAnimalObject);
       case "cat":          
-          return getCatWarnings(json)
+          return getCatWarnings(json,selectedAnimalObject)
       case "guinea-pig":          
-          return getGuineaPigWarnings(json)
+          return getGuineaPigWarnings(json,selectedAnimalObject)
       default:
         break;
     }
@@ -14,7 +14,7 @@ export function getWarningsVariable(json,selectedAnimal){
 
 
 
-function getDogWarnings(json){
+function getDogWarnings(json,animal){
     var warnings = dogWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
@@ -25,13 +25,14 @@ function getDogWarnings(json){
     if(isAlcoholic(json)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
-    if(hasLactose(json)){
+
+    if(hasLactose(json) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Many dogs are lactose intolerant."})    
     }
     return warnings
 }
 
-function getCatWarnings(json){
+function getCatWarnings(json,animal){
 
     var warnings = catWarnings
     warnings.additionalCautions = []
@@ -40,12 +41,12 @@ function getCatWarnings(json){
     if(isAlcoholic(json)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
-    if(hasLactose(json)){
+    if(hasLactose(json) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Many cats are lactose intolerant."})    
     }
 
     var vegeterian = isVegeterian(json)
-    
+    warnings.notes.push({note:vegeterian})
     var catergoriesString = ""
     for(var i = 0; i < json.product.categories_hierarchy.length;i++){
         catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
@@ -62,7 +63,7 @@ function getCatWarnings(json){
     return warnings
 }
 
-function getGuineaPigWarnings(json){
+function getGuineaPigWarnings(json,animal){
 
     var warnings = guineaPigsWarnings
     warnings.additionalCautions = []
@@ -72,7 +73,7 @@ function getGuineaPigWarnings(json){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
 
-    if(hasLactose(json)){
+    if(hasLactose(json) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Guinea pigs are lactose intolerant."})    
     }
 
