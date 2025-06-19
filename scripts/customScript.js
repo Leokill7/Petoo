@@ -19,6 +19,7 @@ function getDogWarnings(json,animal){
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
+    
     if(json.product.nutriments.fat_100g > 25){
         warnings.additionalCautions.push({name:"Fat", note:"The product contains much fat. This can lead to obesity, diarrhea and vomiting."})
     }
@@ -46,7 +47,6 @@ function getCatWarnings(json,animal){
     }
 
     var vegeterian = isVegeterian(json)
-    warnings.notes.push({note:vegeterian})
     var catergoriesString = ""
     for(var i = 0; i < json.product.categories_hierarchy.length;i++){
         catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
@@ -69,6 +69,7 @@ function getGuineaPigWarnings(json,animal){
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
+
     if(isAlcoholic(json)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
@@ -204,7 +205,7 @@ const dogWarnings=
                 note:"Coffee contains caffeine which causes cardiac arrhythmias, vomiting and diarrhea. Untreated a large amount of caffeine can lead to death."
             },{
                 ingredient:"caffeine",
-                name:"Coffee",
+                name:"Caffeine",
                 note:"Caffeine causes cardiac arrhythmias, vomiting and diarrhea. Untreated a large amount of caffeine can lead to death."
             },{
                 ingredient:"macadamia",
@@ -338,7 +339,7 @@ const catWarnings=
                 note:"Coffee contains caffeine which causes cardiac arrhythmias, vomiting and diarrhea. Untreated a large amount of caffeine can lead to death."
             },{
                 ingredient:"caffeine",
-                name:"Coffee",
+                name:"Caffeine",
                 note:"Caffeine causes cardiac arrhythmias, vomiting and diarrhea. Untreated a large amount of caffeine can lead to death."
             },{
                 ingredient:"macadamia",
@@ -477,7 +478,7 @@ const guineaPigsWarnings=
                 note:"Coffee contains caffeine which causes cardiac arrhythmias and diarrhea. Untreated a small amount of caffeine can lead to death."
             },{
                 ingredient:"caffeine",
-                name:"Coffee",
+                name:"Caffeine",
                 note:"Caffeine causes cardiac arrhythmias and diarrhea. Untreated a small amount of caffeine can lead to death."
             },
         ],

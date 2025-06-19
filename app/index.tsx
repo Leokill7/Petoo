@@ -2,7 +2,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
 import { useRef, useState,useEffect } from 'react';
-import { Switch,Linking, Platform,Alert,Modal,ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
+import { Image,Switch, Keyboard,Linking, Platform,Alert,Modal,ActivityIndicator,  Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -50,14 +50,15 @@ export default function Home() {
   var [customPetType, setCustomPetType] = useState("")
   var [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
 
-  var [deletePetTypeSelectionVisible, setDeletePetTypeSelectionVisible] = useState(false)
-  var [deletePetType, setDeletePetType] = useState("")
+  var [deletePetNameSelectionVisible, setDeletePetNameSelectionVisible] = useState(false)
+  var [deletePetName, setDeletePetName] = useState("")
 
   var [green1, setGreen1] = useState("#9AB286");
   var [green2, setGreen2] = useState(darkModeActive?"#528b5f":"#47614d");
   var [backgroundColor, setBackgroundColor] = useState(darkModeActive?"#3D403E":"#F1F1F1");
   var [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
   var [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
+  var [inputElementBorderColor, setInputElementBorderColor] = useState("#999999");
 
   const toastConfig = {
   success: (props: ToastProps) => (
@@ -71,7 +72,7 @@ export default function Home() {
   error: (props: ToastProps) => (
     <ErrorToast 
       {...props}
-      style={{ borderLeftColor: 'red',backgroundColor: mainDisplaybackgroundColor,height:80}}
+      style={{ borderLeftColor: '#D27777',backgroundColor: mainDisplaybackgroundColor,height:80}}
       text1Style={{fontSize: 18,fontWeight:700,color:textColor,paddingBottom:10}}
       text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
     />
@@ -176,7 +177,6 @@ export default function Home() {
           var animal = getAnimalObject()
 
           const warnings = getWarningsVariable(json,animal)
-       
           if(warnings){
             var dangersNames: (string)[] = []
             var dangersDetails = []
@@ -226,6 +226,7 @@ export default function Home() {
             for(const note of warnings.notes as  {note: string }[]){
               notes.push(note.note)
             }
+            alert(notes.length)
             if(notes.length>0){
               setNotesViewEmpty(false)
               setNotesView(notes)
@@ -233,7 +234,13 @@ export default function Home() {
               setNotesViewEmpty(true)
             }
           }
-          setProductNameView(json.product.product_name)
+        
+          if(json.product.product_name){
+            setProductNameView(json.product.product_name)
+          }else{
+            setProductNameView(json.product.product_name_en)
+          }
+          
           setIngredientsFound(true)
           setScanning(false);
         }else{
@@ -252,8 +259,8 @@ export default function Home() {
           {
             text: "Yes",
             onPress: () => {
-              const appStoreUrl = "https://apps.apple.com/us/app/open-food-facts-product-scan/id588797948"; // Replace with your app's App Store ID
-              const playStoreUrl = "https://play.google.com/store/apps/details?id=org.openfoodfacts.scanner"; // Replace with your package name
+              const appStoreUrl = "https://apps.apple.com/us/app/open-food-facts-product-scan/id588797948"; 
+              const playStoreUrl = "https://play.google.com/store/apps/details?id=org.openfoodfacts.scanner"; 
 
               const url = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -266,7 +273,11 @@ export default function Home() {
       );
       }
     }else if(selectedAnimal == "" && persistentDataLoaded.current){
-      alert("Select a pet");
+      Toast.show({
+        type: 'error',
+        text1: 'Error',
+        text2: 'No pet selected.',
+      });
     } 
     setIsLoadingData(false)     
   }  
@@ -390,6 +401,7 @@ export default function Home() {
       width:180,
       backgroundColor:backgroundColor,
       borderRadius:buttonBorderRadius,
+      borderColor: selectedAnimal?green2:"#C4C4C4"
     },
     animalSelectDropdownItem: {
       backgroundColor:backgroundColor,
@@ -412,7 +424,7 @@ export default function Home() {
       paddingTop:8,
       marginTop:8,
       borderTopWidth:1,
-      borderColor:"#676767",
+      borderColor:"#b3b3b3",
       fontSize:20,
       fontWeight:600,
       color:textColor,
@@ -462,6 +474,33 @@ export default function Home() {
       fontWeight: 600,
       alignSelf:"flex-end",
       marginRight: 10
+    },settingsGridElement:{
+      width:"50%",
+      alignItems:"center"
+    },settingsGridElementContainer:{
+      flexDirection:"row",
+      alignItems:"center", 
+      margin:10
+    },animalCreateDropdown: {
+      borderRadius:buttonBorderRadius,
+      borderColor: deletePetName?green2:inputElementBorderColor,
+      width:"50%",backgroundColor:mainDisplaybackgroundColor
+    },animalCreateDropdownItem: {
+      borderColor: deletePetName?green2:inputElementBorderColor,
+      width:"50%",
+      backgroundColor:mainDisplaybackgroundColor
+    },closeModalButton:{
+      height:"8%",
+      backgroundColor:green1,
+      width:"100%",
+      alignItems:"center",
+      paddingTop:8
+    },settingElementContainer:{
+      width:"94%",
+      backgroundColor:mainDisplaybackgroundColor, 
+      padding:5, 
+      borderRadius:15,
+      margin:"3%"
     }
   });
 
@@ -510,7 +549,7 @@ export default function Home() {
           setItems={setSelectableAnimals}
           placeholder="Select Pet"
           listMode="SCROLLVIEW"
-          style={[styles.animalSelectDropdown,{borderColor: selectedAnimal?green2:"#C4C4C4",}]}
+          style={styles.animalSelectDropdown}
           textStyle={{color:green2,fontSize:25,fontWeight:600}}
           placeholderStyle={{ fontWeight: 600 , color: "#C4C4C4" }}
           dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?green2:"#C4C4C4"}]}
@@ -586,6 +625,7 @@ export default function Home() {
                     onChangeText={(text) => {setCurrentManualCode(text)}}
                   />
                   <Pressable onPress={() => {
+                    Keyboard.dismiss();
                     if(currentManualCode != ""){
                       getJSON()
                     }
@@ -757,7 +797,7 @@ export default function Home() {
       <View style={{height:30}}></View>
       <View style={{flexDirection:"row",alignItems: "center",justifyContent: 'center'}}>
           <Pressable  style={[styles.settingsButton,{left:10}]} onPress={() => {setDonationsVisible(true)}}>
-            <Ionicons name="cash" size={27} color={"#FFFFFF"} />
+            <Image source={require("../assets/images/donation-Logo.png")} style={{width: 25, height: 25,tintColor: "#FFFFFF",margin:1 }}/>
           </Pressable>
           <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);currentScannedCode.current = "";setCurrentManualCode("");setDetailsVisible(false)}}>
             <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>{scanning ? "Cancel" : "Scan Barcode"}</Text>
@@ -771,7 +811,7 @@ export default function Home() {
         animationType="slide"
         onRequestClose={() => setDonationsVisible(false)} // Android back button
       >
-        <View style={{flex: 1,backgroundColor: '#00000088',alignItems: 'center',}}>
+        <View style={{flex: 1,backgroundColor: backgroundColor,alignItems: 'center',}}>
           <View style={{height:"7%"}}></View>
           <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: 'white'}}>
             {isDonationWindowLoading && (
@@ -786,18 +826,18 @@ export default function Home() {
               onLoadEnd={() => setIsDonationWindowLoading(false)}
             />
           </View>
-          <Pressable  style={{height:"8%",backgroundColor:green1,borderTopWidth:3,borderColor:"#415947",width:"100%",alignItems:"center",paddingTop:8}} onPress={() => {setDonationsVisible(false)}}>
-            <Text style={{height:"auto", fontSize:30}}>Close</Text>
+          <Pressable  style={styles.closeModalButton} onPress={() => {setDonationsVisible(false)}}>
+            <Text style={{height:"auto", fontSize:30, fontWeight:700,color:"white"}}>Close</Text>
           </Pressable>
         </View>
       </Modal>
       <Modal
         visible={settingsVisible}
         animationType="slide"
-        onRequestClose={() => setDonationsVisible(false)} // Android back button
+        onRequestClose={() => setDonationsVisible(false)}
       >
         <Toast />
-        <View style={{flex: 1,backgroundColor: '#00000088',alignItems: 'center',}}>
+        <View style={{flex: 1,backgroundColor: backgroundColor,alignItems: 'center',}}>
           <View style={{height:"7%"}}></View>
           <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: backgroundColor}}>
             <View style={{alignItems:"center",margin:20}}>
@@ -805,11 +845,11 @@ export default function Home() {
             </View>
             
             <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
-              <View style={{width:"94%",backgroundColor:mainDisplaybackgroundColor, padding:5, borderRadius:15,margin:"3%"}}>
+              <View style={styles.settingElementContainer}>
                 <View>
-                  <View style={{flexDirection:"row",alignItems:"center", margin:10}}>                  
+                  <View style={styles.settingsGridElementContainer}>                  
                     
-                  <View style={{width:"50%",alignItems:"center"}}>
+                  <View style={styles.settingsGridElement}>
                     <Text style={styles.petCreationSubHeader}>Pet type:</Text>
                   </View>
                   <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
@@ -822,40 +862,40 @@ export default function Home() {
                       setItems={setPetTypes}
                       placeholder="Pet type"
                       listMode="SCROLLVIEW"
-                      style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
                       textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                      placeholderStyle={{ fontWeight: 600 , color: "#999999" }}
-                      dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      placeholderStyle={{ fontWeight: 600 , color: inputElementBorderColor }}
+                      dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
                       showTickIcon={false}
                       ArrowDownIconComponent={({ style }) => (
-                        <Ionicons name="caret-down" size={20} color={customPetType?green2:"#999999"}/>
+                        <Ionicons name="caret-down" size={20} color={customPetType?green2:inputElementBorderColor}/>
                       )}
                       ArrowUpIconComponent={({ style }) => (
-                        <Ionicons name="caret-up" size={20} color={customPetType?green2:"#999999"}/>
+                        <Ionicons name="caret-up" size={20} color={customPetType?green2:inputElementBorderColor}/>
                       )}
-                      >
+                    >
                     </DropDownPicker>
                   </View>
                 </View>
-                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
-                  <View style={{width:"50%",alignItems:"center"}}>
+                <View style={styles.settingsGridElementContainer}>
+                  <View style={styles.settingsGridElement}>
                     <Text style={styles.petCreationSubHeader}>Pet name:</Text>
                   </View>
                   <View style={{width:"50%"}}>
                     <TextInput
                       autoCorrect={false}
-                      style={[styles.textInputManual,{width:"auto",borderColor:"#999999"}]}
+                      style={[styles.textInputManual,{width:"auto",borderColor:inputElementBorderColor}]}
                       placeholderTextColor="#aaa"                    
                       value={customPetName}
                       onChangeText={setCustomPetName}
                     />
                   </View>
                 </View>
-                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
-                  <View style={{width:"50%",alignItems:"center"}}>
+                <View style={styles.settingsGridElementContainer}>
+                  <View style={styles.settingsGridElement}>
                     <Text style={styles.petCreationSubHeader}>Lactose intolerant:</Text>
                   </View>
-                  <View style={{width:"50%",alignItems:"center"}}>
+                  <View style={styles.settingsGridElement}>
                     <Switch
                       value={isLactoseIntolerantSelected}
                       onValueChange={setIsLactoseIntolerantSelected}
@@ -863,24 +903,32 @@ export default function Home() {
                     />
                   </View>
                 </View>
-                <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
-                  <View style={{width:"50%",alignItems:"center"}}></View>
-                  <View style={{width:"50%",alignItems:"center"}}>
+                <View style={styles.settingsGridElementContainer}>
+                  <View style={styles.settingsGridElement}></View>
+                  <View style={styles.settingsGridElement}>
                     <Pressable  style={styles.scanningButton}  onPress={()=>{
-                      if(customPetName !== ""){
-                        setSelectableAnimals(prevAnimals => [
-                          ...prevAnimals,
-                          { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }
-                        ]);
+                      Keyboard.dismiss();
+                      if(customPetName !== "" && customPetType){
+                        setSelectableAnimals(prevAnimals => {
+                          const newValue = [...prevAnimals, { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }];
+                          SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
+                          return newValue
+                        });
                         setIsLactoseIntolerantSelected(false)
                         setCustomPetName("")
                         setCustomPetType("")
-                        SecureStore.setItemAsync('selectableAnimals', JSON.stringify(selectableAnimals));
+                    
                         Toast.show({
                         type: 'success',
                         text1: 'Success',
                         text2: 'Pet "'+customPetName+'" was created.',
-                      });
+                        });
+                      }if(!customPetType){
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error',
+                          text2: 'No pet type given.',
+                        });
                       }else{
                         Toast.show({
                           type: 'error',
@@ -897,67 +945,74 @@ export default function Home() {
               
             </View> 
             <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
-            <View style={{width:"94%",backgroundColor:mainDisplaybackgroundColor, padding:5, borderRadius:15,margin:"3%"}}>
-              <View style={{flexDirection:"row",alignItems:"center", margin:10}}>                  
+            <View style={styles.settingElementContainer}>
+              <View style={styles.settingsGridElementContainer}>                  
                   
-                <View style={{width:"50%",alignItems:"center"}}>
+                <View style={styles.settingsGridElement}>
                   <Text style={styles.petCreationSubHeader}>Pet:</Text>
                 </View>
                 <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
                   <DropDownPicker
-                    open={deletePetTypeSelectionVisible}
-                    value={deletePetType}
+                    open={deletePetNameSelectionVisible}
+                    value={deletePetName}
                     items={selectableAnimals}
-                    setOpen={setDeletePetTypeSelectionVisible}
-                    setValue={setDeletePetType}
+                    setOpen={setDeletePetNameSelectionVisible}
+                    setValue={setDeletePetName}
                     setItems={setSelectableAnimals}
                     placeholder="Pet"
                     listMode="SCROLLVIEW"
-                    style={[styles.animalSelectDropdown,{borderColor: deletePetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                    style={styles.animalCreateDropdown}
                     textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                    placeholderStyle={{ fontWeight: 600 , color: "#999999" }}
-                    dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: deletePetType?green2:"#999999",width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                    placeholderStyle={{ fontWeight: 600 , color:inputElementBorderColor }}
+                    dropDownContainerStyle={styles.animalCreateDropdownItem}
                     showTickIcon={false}
                     ArrowDownIconComponent={({ style }) => (
-                      <Ionicons name="caret-down" size={20} color={deletePetType?green2:"#999999"}/>
+                      <Ionicons name="caret-down" size={20} color={deletePetName?green2:inputElementBorderColor}/>
                     )}
                     ArrowUpIconComponent={({ style }) => (
-                      <Ionicons name="caret-up" size={20} color={deletePetType?green2:"#999999"}/>
+                      <Ionicons name="caret-up" size={20} color={deletePetName?green2:inputElementBorderColor}/>
                     )}
                     >
                   </DropDownPicker>
                 </View>
               </View>
-              <View style={{flexDirection:"row",alignItems:"center"}}>
-                <View style={{width:"50%",alignItems:"center"}}>
+              <View style={[styles.settingsGridElementContainer,{margin:0}]}>
+                <View style={styles.settingsGridElement}>
                   <Text style={styles.petCreationSubHeader}>Pet type:</Text>
                 </View>
-                <View style={{width:"50%",alignItems:"center"}}>
-                  <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>{Object.values(selectableAnimals).find((item) => item["value"] === deletePetType)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetType)?.type.slice(1)}</Text>
+                <View style={styles.settingsGridElement}>
+                  <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>
+                    {Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.slice(1)}
+                  </Text>
                 </View>
               </View>
-              <View style={{flexDirection:"row",alignItems:"center", margin:10}}>
-                <View style={{width:"50%",alignItems:"center"}}></View>
-                <View style={{width:"50%",alignItems:"center"}}>
-                  <Pressable  style={styles.scanningButton}  onPress={()=>{
-                    if(deletePetType !== ""){
-                      setSelectableAnimals( () => {return selectableAnimals.filter(item => item.value !== deletePetType)});
-                      SecureStore.setItemAsync('selectableAnimals', JSON.stringify(selectableAnimals));
-                      Toast.show({
-                        type: 'success',
-                        text1: 'Success',
-                        text2: 'Animal deleted.',
-                      });
-                      setDeletePetType("")
-                    }else{
-                      Toast.show({
-                        type: 'error',
-                        text1: 'Error',
-                        text2: 'No pet selected to delete.',
-                      });
-                    }
-                      
-                  }}>
+              <View style={styles.settingsGridElementContainer}>
+                <View style={styles.settingsGridElement}></View>
+                <View style={styles.settingsGridElement}>
+                  <Pressable  style={styles.scanningButton}  
+                    onPress={()=>{
+                      if(deletePetName !== ""){
+                        setSelectableAnimals( () => {
+                          const newValue = selectableAnimals.filter(item => item.value !== deletePetName);
+                          SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
+                          return newValue
+                        });
+                        
+                        Toast.show({
+                          type: 'success',
+                          text1: 'Success',
+                          text2: 'Animal "'+deletePetName+'" deleted.',
+                        });
+                        setDeletePetName("")
+                      }else{
+                        Toast.show({
+                          type: 'error',
+                          text1: 'Error',
+                          text2: 'No pet selected to delete.',
+                        });
+                      } 
+                    }}
+                  >
                     <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Delete Pet</Text>
                   </Pressable>
                 </View>
@@ -967,8 +1022,8 @@ export default function Home() {
               <Text style={{ color:"#959595",padding:10}}>Privacy Policy</Text>
             </Pressable>
           </View>
-          <Pressable  style={{height:"8%",backgroundColor:green1,borderTopWidth:3,borderColor:"#415947",width:"100%",alignItems:"center",paddingTop:8}} onPress={() => {setSettingsVisible(false)}}>
-            <Text style={{height:"auto", fontSize:30}}>Close</Text>
+          <Pressable  style={styles.closeModalButton} onPress={() => {setSettingsVisible(false)}}>
+            <Text style={{height:"auto", fontSize:30, fontWeight:700,color:"white"}}>Close</Text>
           </Pressable>
         </View>
         <Toast config={toastConfig}/>
