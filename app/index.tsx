@@ -78,6 +78,7 @@ export default function Home() {
     />
   )}
 
+
   const toggleDarkMode = (willBeActive: boolean) => {
 
     if(willBeActive){
@@ -545,6 +546,10 @@ export default function Home() {
           value={selectedAnimal}
           items={selectableAnimals}
           setOpen={setAnimalSelectionVisible}
+          onOpen={()=>{
+            setCustomePetTypeSelectionVisible(false)
+            setDeletePetNameSelectionVisible(false)
+          }}
           setValue={setSelectedAnimal}
           setItems={setSelectableAnimals}
           placeholder="Select Pet"
@@ -859,6 +864,10 @@ export default function Home() {
                         items={petTypes}
                         setOpen={setCustomePetTypeSelectionVisible}
                         setValue={setCustomPetType}
+                        onOpen={()=>{
+                          setAnimalSelectionVisible(false)
+                          setDeletePetNameSelectionVisible(false)
+                        }}
                         setItems={setPetTypes}
                         placeholder="Pet type"
                         listMode="SCROLLVIEW"
@@ -958,6 +967,10 @@ export default function Home() {
                       items={selectableAnimals}
                       setOpen={setDeletePetNameSelectionVisible}
                       setValue={setDeletePetName}
+                      onOpen={()=>{
+                        setCustomePetTypeSelectionVisible(false)
+                        setAnimalSelectionVisible(false)
+                      }}
                       setItems={setSelectableAnimals}
                       placeholder="Pet"
                       listMode="SCROLLVIEW"
