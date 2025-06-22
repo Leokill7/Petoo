@@ -843,181 +843,183 @@ export default function Home() {
             <View style={{alignItems:"center",margin:20}}>
               <Text style={styles.productTitleText}>Settings</Text>
             </View>
-            
-            <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
+            <ScrollView contentContainerStyle={{ paddingBottom: 70 }}>
+              <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
               <View style={styles.settingElementContainer}>
                 <View>
                   <View style={styles.settingsGridElementContainer}>                  
                     
+                    <View style={styles.settingsGridElement}>
+                      <Text style={styles.petCreationSubHeader}>Pet type:</Text>
+                    </View>
+                    <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
+                      <DropDownPicker
+                        open={customePetTypeSelectionVisible}
+                        value={customPetType}
+                        items={petTypes}
+                        setOpen={setCustomePetTypeSelectionVisible}
+                        setValue={setCustomPetType}
+                        setItems={setPetTypes}
+                        placeholder="Pet type"
+                        listMode="SCROLLVIEW"
+                        style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                        textStyle={{color:green2,fontSize:20,fontWeight:600}}
+                        placeholderStyle={{ fontWeight: 600 , color: inputElementBorderColor }}
+                        dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                        showTickIcon={false}
+                        ArrowDownIconComponent={({ style }) => (
+                          <Ionicons name="caret-down" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                        )}
+                        ArrowUpIconComponent={({ style }) => (
+                          <Ionicons name="caret-up" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                        )}
+                      >
+                      </DropDownPicker>
+                    </View>
+                  </View>
+                  <View style={styles.settingsGridElementContainer}>
+                    <View style={styles.settingsGridElement}>
+                      <Text style={styles.petCreationSubHeader}>Pet name:</Text>
+                    </View>
+                    <View style={{width:"50%"}}>
+                      <TextInput
+                        autoCorrect={false}
+                        style={[styles.textInputManual,{width:"auto",borderColor:inputElementBorderColor}]}
+                        placeholderTextColor="#aaa"                    
+                        value={customPetName}
+                        onChangeText={setCustomPetName}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.settingsGridElementContainer}>
+                    <View style={styles.settingsGridElement}>
+                      <Text style={styles.petCreationSubHeader}>Lactose intolerant:</Text>
+                    </View>
+                    <View style={styles.settingsGridElement}>
+                      <Switch
+                        value={isLactoseIntolerantSelected}
+                        onValueChange={setIsLactoseIntolerantSelected}
+                        trackColor={{ false: backgroundColor, true: green1 }}
+                      />
+                    </View>
+                  </View>
+                  <View style={styles.settingsGridElementContainer}>
+                    <View style={styles.settingsGridElement}></View>
+                    <View style={styles.settingsGridElement}>
+                      <Pressable  style={styles.scanningButton}  onPress={()=>{
+                        Keyboard.dismiss();
+                        if(customPetName !== "" && customPetType){
+                          setSelectableAnimals(prevAnimals => {
+                            const newValue = [...prevAnimals, { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }];
+                            SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
+                            return newValue
+                          });
+                          setIsLactoseIntolerantSelected(false)
+                          setCustomPetName("")
+                          setCustomPetType("")
+                      
+                          Toast.show({
+                          type: 'success',
+                          text1: 'Success',
+                          text2: 'Pet "'+customPetName+'" was created.',
+                          });
+                        }if(!customPetType){
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Error',
+                            text2: 'No pet type given.',
+                          });
+                        }else{
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Error',
+                            text2: 'No pet name given.',
+                          });
+                        }
+                      }}>
+                        <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Create Pet</Text>
+                      </Pressable>
+                    </View>
+                  </View>
+                </View>
+                
+              </View> 
+              <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
+              <View style={styles.settingElementContainer}>
+                <View style={styles.settingsGridElementContainer}>                  
+                    
                   <View style={styles.settingsGridElement}>
-                    <Text style={styles.petCreationSubHeader}>Pet type:</Text>
+                    <Text style={styles.petCreationSubHeader}>Pet:</Text>
                   </View>
                   <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
                     <DropDownPicker
-                      open={customePetTypeSelectionVisible}
-                      value={customPetType}
-                      items={petTypes}
-                      setOpen={setCustomePetTypeSelectionVisible}
-                      setValue={setCustomPetType}
-                      setItems={setPetTypes}
-                      placeholder="Pet type"
+                      open={deletePetNameSelectionVisible}
+                      value={deletePetName}
+                      items={selectableAnimals}
+                      setOpen={setDeletePetNameSelectionVisible}
+                      setValue={setDeletePetName}
+                      setItems={setSelectableAnimals}
+                      placeholder="Pet"
                       listMode="SCROLLVIEW"
-                      style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      style={styles.animalCreateDropdown}
                       textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                      placeholderStyle={{ fontWeight: 600 , color: inputElementBorderColor }}
-                      dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                      placeholderStyle={{ fontWeight: 600 , color:inputElementBorderColor }}
+                      dropDownContainerStyle={styles.animalCreateDropdownItem}
                       showTickIcon={false}
                       ArrowDownIconComponent={({ style }) => (
-                        <Ionicons name="caret-down" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                        <Ionicons name="caret-down" size={20} color={deletePetName?green2:inputElementBorderColor}/>
                       )}
                       ArrowUpIconComponent={({ style }) => (
-                        <Ionicons name="caret-up" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                        <Ionicons name="caret-up" size={20} color={deletePetName?green2:inputElementBorderColor}/>
                       )}
-                    >
+                      >
                     </DropDownPicker>
                   </View>
                 </View>
-                <View style={styles.settingsGridElementContainer}>
+                <View style={[styles.settingsGridElementContainer,{margin:0}]}>
                   <View style={styles.settingsGridElement}>
-                    <Text style={styles.petCreationSubHeader}>Pet name:</Text>
-                  </View>
-                  <View style={{width:"50%"}}>
-                    <TextInput
-                      autoCorrect={false}
-                      style={[styles.textInputManual,{width:"auto",borderColor:inputElementBorderColor}]}
-                      placeholderTextColor="#aaa"                    
-                      value={customPetName}
-                      onChangeText={setCustomPetName}
-                    />
-                  </View>
-                </View>
-                <View style={styles.settingsGridElementContainer}>
-                  <View style={styles.settingsGridElement}>
-                    <Text style={styles.petCreationSubHeader}>Lactose intolerant:</Text>
+                    <Text style={styles.petCreationSubHeader}>Pet type:</Text>
                   </View>
                   <View style={styles.settingsGridElement}>
-                    <Switch
-                      value={isLactoseIntolerantSelected}
-                      onValueChange={setIsLactoseIntolerantSelected}
-                      trackColor={{ false: backgroundColor, true: green1 }}
-                    />
+                    <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>
+                      {Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.slice(1)}
+                    </Text>
                   </View>
                 </View>
                 <View style={styles.settingsGridElementContainer}>
                   <View style={styles.settingsGridElement}></View>
                   <View style={styles.settingsGridElement}>
-                    <Pressable  style={styles.scanningButton}  onPress={()=>{
-                      Keyboard.dismiss();
-                      if(customPetName !== "" && customPetType){
-                        setSelectableAnimals(prevAnimals => {
-                          const newValue = [...prevAnimals, { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }];
-                          SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
-                          return newValue
-                        });
-                        setIsLactoseIntolerantSelected(false)
-                        setCustomPetName("")
-                        setCustomPetType("")
-                    
-                        Toast.show({
-                        type: 'success',
-                        text1: 'Success',
-                        text2: 'Pet "'+customPetName+'" was created.',
-                        });
-                      }if(!customPetType){
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Error',
-                          text2: 'No pet type given.',
-                        });
-                      }else{
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Error',
-                          text2: 'No pet name given.',
-                        });
-                      }
-                    }}>
-                      <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Create Pet</Text>
+                    <Pressable  style={styles.scanningButton}  
+                      onPress={()=>{
+                        if(deletePetName !== ""){
+                          setSelectableAnimals( () => {
+                            const newValue = selectableAnimals.filter(item => item.value !== deletePetName);
+                            SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
+                            return newValue
+                          });
+                          
+                          Toast.show({
+                            type: 'success',
+                            text1: 'Success',
+                            text2: 'Animal "'+deletePetName+'" deleted.',
+                          });
+                          setDeletePetName("")
+                        }else{
+                          Toast.show({
+                            type: 'error',
+                            text1: 'Error',
+                            text2: 'No pet selected to delete.',
+                          });
+                        } 
+                      }}
+                    >
+                      <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Delete Pet</Text>
                     </Pressable>
                   </View>
                 </View>
-              </View>
-              
-            </View> 
-            <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
-            <View style={styles.settingElementContainer}>
-              <View style={styles.settingsGridElementContainer}>                  
-                  
-                <View style={styles.settingsGridElement}>
-                  <Text style={styles.petCreationSubHeader}>Pet:</Text>
-                </View>
-                <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
-                  <DropDownPicker
-                    open={deletePetNameSelectionVisible}
-                    value={deletePetName}
-                    items={selectableAnimals}
-                    setOpen={setDeletePetNameSelectionVisible}
-                    setValue={setDeletePetName}
-                    setItems={setSelectableAnimals}
-                    placeholder="Pet"
-                    listMode="SCROLLVIEW"
-                    style={styles.animalCreateDropdown}
-                    textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                    placeholderStyle={{ fontWeight: 600 , color:inputElementBorderColor }}
-                    dropDownContainerStyle={styles.animalCreateDropdownItem}
-                    showTickIcon={false}
-                    ArrowDownIconComponent={({ style }) => (
-                      <Ionicons name="caret-down" size={20} color={deletePetName?green2:inputElementBorderColor}/>
-                    )}
-                    ArrowUpIconComponent={({ style }) => (
-                      <Ionicons name="caret-up" size={20} color={deletePetName?green2:inputElementBorderColor}/>
-                    )}
-                    >
-                  </DropDownPicker>
-                </View>
-              </View>
-              <View style={[styles.settingsGridElementContainer,{margin:0}]}>
-                <View style={styles.settingsGridElement}>
-                  <Text style={styles.petCreationSubHeader}>Pet type:</Text>
-                </View>
-                <View style={styles.settingsGridElement}>
-                  <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>
-                    {Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.slice(1)}
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.settingsGridElementContainer}>
-                <View style={styles.settingsGridElement}></View>
-                <View style={styles.settingsGridElement}>
-                  <Pressable  style={styles.scanningButton}  
-                    onPress={()=>{
-                      if(deletePetName !== ""){
-                        setSelectableAnimals( () => {
-                          const newValue = selectableAnimals.filter(item => item.value !== deletePetName);
-                          SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
-                          return newValue
-                        });
-                        
-                        Toast.show({
-                          type: 'success',
-                          text1: 'Success',
-                          text2: 'Animal "'+deletePetName+'" deleted.',
-                        });
-                        setDeletePetName("")
-                      }else{
-                        Toast.show({
-                          type: 'error',
-                          text1: 'Error',
-                          text2: 'No pet selected to delete.',
-                        });
-                      } 
-                    }}
-                  >
-                    <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Delete Pet</Text>
-                  </Pressable>
-                </View>
-              </View>
-            </View> 
+              </View> 
+            </ScrollView>
+            
             <Pressable style={{position:"absolute",bottom:5,left:5}} onPress={() => Linking.openURL('https://leonard-arnold.site/petoo/Petoo_Privacy_Policy.pdf')}>
               <Text style={{ color:"#959595",padding:10}}>Privacy Policy</Text>
             </Pressable>
