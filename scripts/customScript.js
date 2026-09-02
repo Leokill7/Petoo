@@ -15,7 +15,7 @@ export function getWarningsVariable(json,selectedAnimalObject){
 
 
 function getDogWarnings(json,animal){
-    var warnings = dogWarnings
+    let warnings = dogWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
@@ -35,7 +35,7 @@ function getDogWarnings(json,animal){
 
 function getCatWarnings(json,animal){
 
-    var warnings = catWarnings
+    let warnings = catWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
@@ -46,9 +46,9 @@ function getCatWarnings(json,animal){
         warnings.additionalCautions.push({name:"Lactose",note:"Many cats are lactose intolerant."})    
     }
 
-    var vegeterian = isVegeterian(json)
-    var catergoriesString = ""
-    for(var i = 0; i < json.product.categories_hierarchy.length;i++){
+    let vegeterian = isVegeterian(json)
+    let catergoriesString = ""
+    for(let i = 0; i < json.product.categories_hierarchy.length;i++){
         catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
     }
 
@@ -65,7 +65,7 @@ function getCatWarnings(json,animal){
 
 function getGuineaPigWarnings(json,animal){
 
-    var warnings = guineaPigsWarnings
+    let warnings = guineaPigsWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
@@ -78,13 +78,13 @@ function getGuineaPigWarnings(json,animal){
         warnings.additionalCautions.push({name:"Lactose",note:"Guinea pigs are lactose intolerant."})    
     }
 
-    var catergoriesString = ""
-    for(var i = 0; i < json.product.categories_hierarchy.length;i++){
+    let catergoriesString = ""
+    for(let i = 0; i < json.product.categories_hierarchy.length;i++){
         catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
     }
 
     if(!catergoriesString.includes("beverage")){
-        var vegeterian = isVegeterian(json)
+        let vegeterian = isVegeterian(json)
         if(vegeterian === false){
             warnings.additionalDangers.push({name:"Meat",note:"Guinea pigs are hebrivores and should not eat meat."})    
         }else if(vegeterian === null){
@@ -96,8 +96,8 @@ function getGuineaPigWarnings(json,animal){
 }
 
 function isAlcoholic(json){
-    categoriesString = ""
-    for(var  i = 0; i < json.product.categories_tags.length;i++){
+    let categoriesString = ""
+    for(let  i = 0; i < json.product.categories_tags.length;i++){
         categoriesString = categoriesString + json.product.categories_tags[i]
     }
 
@@ -108,13 +108,13 @@ function isAlcoholic(json){
 }
 
 function isVegeterian(json){
-    categoriesString = ""
+    let categoriesString = ""
 
     if(!json.product.ingredients_analysis_tags){
         return null
     }
 
-    for(var  i = 0; i < json.product.ingredients_analysis_tags.length;i++){
+    for(let  i = 0; i < json.product.ingredients_analysis_tags.length;i++){
         categoriesString = categoriesString + json.product.ingredients_analysis_tags[i]
     }
 
@@ -130,8 +130,8 @@ function isVegeterian(json){
 }
 
 function hasLactose(json){
-    categoriesString = ""
-    for(var  i = 0; i < json.product.categories_tags.length;i++){
+    let categoriesString = ""
+    for(let  i = 0; i < json.product.categories_tags.length;i++){
         categoriesString = categoriesString + json.product.categories_tags[i]
     }
 

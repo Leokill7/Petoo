@@ -22,43 +22,43 @@ export default function Home() {
   const [selectedAnimal, setSelectedAnimal] = useState("");
   const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
   const [selectableAnimals, setSelectableAnimals] = useState([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
-  var [ingredientsFound, setIngredientsFound] = useState(false)
-  var [productNameView, setProductNameView] = useState(<></>);
-  var [dangersView, setDangersView] = useState<string[]>([]);
-  var [cautionsView, setCautionsView] = useState<string[]>([]);
-  var [notesView, setNotesView] = useState<string[]>([]);
-  var [dangersDetails, setDangersDetails] = useState<string[]>([]);
-  var [cautionsDetails, setCautionsDetails] = useState<string[]>([]);
-  var [cautionsViewEmpty, setCautionsViewEmpty] = useState(true);
-  var [dangersViewEmpty, setDangersViewEmpty] = useState(true);
-  var [notesViewEmpty, setNotesViewEmpty] = useState(true);
-  var [isLoadingData, setIsLoadingData] = useState(false) 
-  var [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false) 
-  var [detailsVisible, setDetailsVisible] = useState(false)
-  var [settingsVisible, setSettingsVisible] = useState(false)
-  var [donationsVisible, setDonationsVisible] = useState(false)
-  var [currentManualCode, setCurrentManualCode] = useState("")
-  var [darkModeActive,setDarkMode] = useState(useColorScheme()==="dark")
+  let [ingredientsFound, setIngredientsFound] = useState(false)
+  let [productNameView, setProductNameView] = useState(<></>);
+  let [dangersView, setDangersView] = useState<string[]>([]);
+  let [cautionsView, setCautionsView] = useState<string[]>([]);
+  let [notesView, setNotesView] = useState<string[]>([]);
+  let [dangersDetails, setDangersDetails] = useState<string[]>([]);
+  let [cautionsDetails, setCautionsDetails] = useState<string[]>([]);
+  let [cautionsViewEmpty, setCautionsViewEmpty] = useState(true);
+  let [dangersViewEmpty, setDangersViewEmpty] = useState(true);
+  let [notesViewEmpty, setNotesViewEmpty] = useState(true);
+  let [isLoadingData, setIsLoadingData] = useState(false) 
+  let [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false) 
+  let [detailsVisible, setDetailsVisible] = useState(false)
+  let [settingsVisible, setSettingsVisible] = useState(false)
+  let [donationsVisible, setDonationsVisible] = useState(false)
+  let [currentManualCode, setCurrentManualCode] = useState("")
+  let [darkModeActive,setDarkMode] = useState(useColorScheme()==="dark")
   const currentScannedCode = useRef("");
 
-  var persistentDataLoaded = useRef(false)
+  let persistentDataLoaded = useRef(false)
 
 
-  var [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
-  var [customPetName, setCustomPetName] = useState("")
-  var [customePetTypeSelectionVisible, setCustomePetTypeSelectionVisible] = useState(false)
-  var [customPetType, setCustomPetType] = useState("")
-  var [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
+  let [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
+  let [customPetName, setCustomPetName] = useState("")
+  let [customePetTypeSelectionVisible, setCustomePetTypeSelectionVisible] = useState(false)
+  let [customPetType, setCustomPetType] = useState("")
+  let [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
 
-  var [deletePetNameSelectionVisible, setDeletePetNameSelectionVisible] = useState(false)
-  var [deletePetName, setDeletePetName] = useState("")
+  let [deletePetNameSelectionVisible, setDeletePetNameSelectionVisible] = useState(false)
+  let [deletePetName, setDeletePetName] = useState("")
 
-  var [green1, setGreen1] = useState("#9AB286");
-  var [green2, setGreen2] = useState(darkModeActive?"#528b5f":"#47614d");
-  var [backgroundColor, setBackgroundColor] = useState(darkModeActive?"#3D403E":"#F1F1F1");
-  var [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
-  var [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
-  var [inputElementBorderColor, setInputElementBorderColor] = useState("#999999");
+  let [green1, setGreen1] = useState("#9AB286");
+  let [green2, setGreen2] = useState(darkModeActive?"#528b5f":"#47614d");
+  let [backgroundColor, setBackgroundColor] = useState(darkModeActive?"#3D403E":"#F1F1F1");
+  let [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
+  let [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
+  let [inputElementBorderColor, setInputElementBorderColor] = useState("#999999");
 
   const toastConfig = {
   success: (props: ToastProps) => (
@@ -148,7 +148,7 @@ export default function Home() {
   const getJSON = async () => {
     setIsLoadingData(true)
     if((currentScannedCode.current || currentManualCode) && selectedAnimal){
-      var code = ""
+      let code = ""
       if(currentScannedCode.current){
         code = currentScannedCode.current
       }else{
@@ -159,28 +159,28 @@ export default function Home() {
       const json = await response.json();
 
       if (json.status == 1) {
-        var states_tags = []
+        let states_tags = []
         states_tags = json.product.states_tags
 
         if(states_tags.includes("en:ingredients-completed")){
-          var ingredientsTagsCollection = ""
+          let ingredientsTagsCollection = ""
           
-          for(var i = 0; i < json.product.allergens_hierarchy.length; i++){
+          for(let i = 0; i < json.product.allergens_hierarchy.length; i++){
             ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.allergens_hierarchy[i].slice(3));
           }
-          for(var i = 0; i < json.product.ingredients_tags.length; i++){
+          for(let i = 0; i < json.product.ingredients_tags.length; i++){
             ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.ingredients_tags[i].slice(3));
           }
         
           ingredientsTagsCollection = ingredientsTagsCollection + " " + (json.product.ingredients_text_en)
           ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
 
-          var animal = getAnimalObject()
+          let animal = getAnimalObject()
 
           const warnings = getWarningsVariable(json,animal)
           if(warnings){
-            var dangersNames: (string)[] = []
-            var dangersDetails = []
+            let dangersNames: (string)[] = []
+            let dangersDetails = []
             for(const danger of warnings.dangers){
               if(ingredientsTagsCollection.includes(danger.ingredient)){
             
@@ -202,8 +202,8 @@ export default function Home() {
               setDangersViewEmpty(true)
             }
      
-            var cautionsNames: (string)[] = []
-            var cautionsDetails = []
+            let cautionsNames: (string)[] = []
+            let cautionsDetails = []
             for(const caution of warnings.cautions){
               if(ingredientsTagsCollection.includes(caution.ingredient)){
                 cautionsNames.push(caution.name)
@@ -223,7 +223,7 @@ export default function Home() {
               setCautionsViewEmpty(true)
             }       
             
-            var notes: (string)[] = []
+            let notes: (string)[] = []
             for(const note of warnings.notes as  {note: string }[]){
               notes.push(note.note)
             }
