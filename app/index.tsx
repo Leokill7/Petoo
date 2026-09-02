@@ -1,7 +1,7 @@
 import { Ionicons } from '@expo/vector-icons';
 import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
-import { useRef, useState,useEffect } from 'react';
+import {useRef, useState, useEffect, useContext} from 'react';
 import { Image,Switch, Keyboard,Linking, Platform,Alert,Modal,ActivityIndicator,  Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -10,11 +10,14 @@ import { getWarningsVariable } from '../scripts/customScript';
 import * as SecureStore from 'expo-secure-store';
 import { WebView } from 'react-native-webview';
 import Toast, { BaseToast, ErrorToast , ToastProps } from 'react-native-toast-message';
+import {createStyles, getColors, themeColors} from '@/constants/Colors';
+import {useTheme} from "@/context/ThemeContext";
 
-const buttonBorderWidth = 1;
-const buttonBorderRadius = 15
 
 export default function Home() {
+    const {colors, toggleTheme, darkModeActive} = useTheme();
+    const styles = createStyles(colors);
+
   const [permission, requestPermission] = useCameraPermissions();
   const [cam, setCamDirection] = useState<CameraType>("back");
   const [scanning, setScanning] = useState(false);
@@ -32,17 +35,15 @@ export default function Home() {
   let [cautionsViewEmpty, setCautionsViewEmpty] = useState(true);
   let [dangersViewEmpty, setDangersViewEmpty] = useState(true);
   let [notesViewEmpty, setNotesViewEmpty] = useState(true);
-  let [isLoadingData, setIsLoadingData] = useState(false) 
+  let [isLoadingData, setIsLoadingData] = useState(false)
   let [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false) 
   let [detailsVisible, setDetailsVisible] = useState(false)
   let [settingsVisible, setSettingsVisible] = useState(false)
   let [donationsVisible, setDonationsVisible] = useState(false)
   let [currentManualCode, setCurrentManualCode] = useState("")
-  let [darkModeActive,setDarkMode] = useState(useColorScheme()==="dark")
   const currentScannedCode = useRef("");
 
   let persistentDataLoaded = useRef(false)
-
 
   let [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
   let [customPetName, setCustomPetName] = useState("")
@@ -53,63 +54,31 @@ export default function Home() {
   let [deletePetNameSelectionVisible, setDeletePetNameSelectionVisible] = useState(false)
   let [deletePetName, setDeletePetName] = useState("")
 
-  let [green1, setGreen1] = useState("#9AB286");
-  let [green2, setGreen2] = useState(darkModeActive?"#528b5f":"#47614d");
-  let [backgroundColor, setBackgroundColor] = useState(darkModeActive?"#3D403E":"#F1F1F1");
-  let [mainDisplaybackgroundColor, setMainDisplaybackgroundColor] = useState(darkModeActive?"#343434":"#E3E3E3");
-  let [textColor,setTextColor] = useState(darkModeActive?"#CFCFCF":"#686868")
-  let [inputElementBorderColor, setInputElementBorderColor] = useState("#999999");
+
 
   const toastConfig = {
   success: (props: ToastProps) => (
     <BaseToast
       {...props}
-      style={{ borderLeftColor: green1 ,backgroundColor: mainDisplaybackgroundColor,height:80}}
-      text1Style={{fontSize: 18,fontWeight:700,color:textColor,paddingBottom:10}}
+      style={{ borderLeftColor: colors.green1 ,backgroundColor: colors.mainDisplaybackgroundColor,height:80}}
+      text1Style={{fontSize: 18,fontWeight:700,color:colors.textColor,paddingBottom:10}}
       text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
     />
   ),
   error: (props: ToastProps) => (
     <ErrorToast 
       {...props}
-      style={{ borderLeftColor: '#D27777',backgroundColor: mainDisplaybackgroundColor,height:80}}
-      text1Style={{fontSize: 18,fontWeight:700,color:textColor,paddingBottom:10}}
+      style={{ borderLeftColor: '#D27777',backgroundColor: colors.mainDisplaybackgroundColor,height:80}}
+      text1Style={{fontSize: 18,fontWeight:700,color:colors.textColor,paddingBottom:10}}
       text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
     />
   )}
-
-
-  const toggleDarkMode = (willBeActive: boolean) => {
-
-    if(willBeActive){
-      setGreen2("#528b5f")
-      setMainDisplaybackgroundColor("#343434")
-      setBackgroundColor("#3D403E")
-      setTextColor("#CFCFCF")
-    }else{
-      setGreen2("#47614d")
-      setMainDisplaybackgroundColor("#E3E3E3")
-      setBackgroundColor("#F1F1F1")
-      setTextColor("#686868")
-    }
-    SecureStore.setItemAsync('darkMode', JSON.stringify(willBeActive));
-    setDarkMode(willBeActive)
-  }
 
   const getAnimalObject = () => {
     return Object.values(selectableAnimals).find((item) => item["value"] === selectedAnimal);
   }
 
   useEffect(() => {
-    const loadTheme = async () => {
-      try {
-        const storedMode = await SecureStore.getItemAsync('darkMode');
-        if (storedMode !== null) {
-          const parsed = JSON.parse(storedMode);
-          toggleDarkMode(parsed)
-        }
-      } catch (e) {}
-    };
     const loadAnimal = async () => {
       try {
         const storedMode = await SecureStore.getItemAsync('selectedItem');
@@ -135,7 +104,6 @@ export default function Home() {
     const loadData = async () => {
       await loadAnimal()
       loadSelectableAnimals()
-      loadTheme()
       persistentDataLoaded.current = true;
     }
     loadData()
@@ -290,224 +258,10 @@ export default function Home() {
       getJSON();     
     }
   };
-  const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: backgroundColor,
-      margin:"5%"
-    },
-    inputContainer: {
-      backgroundColor: mainDisplaybackgroundColor,
-      borderRadius:buttonBorderRadius,
-      overflow: 'visible',
-      alignItems: "center",
-      height: "60%",
-      width: "100%",
-    },
-    camera: {
-      borderRadius: buttonBorderRadius,
-      overflow: 'hidden',
-      height: "100%",
-      width: "100%",
-    },
-    buttonContainer: {
-      position: 'absolute',
-      zIndex:10,
-      width: 50,
-      height: 50,
-      borderRadius: 999,
-      overflow: 'hidden',
-    },
-    manualInputSelector: {
-      top: 20,left: 20,
-      position: 'absolute',
-      zIndex:10,
-      padding: 7,
-      borderRadius: 999,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
-    },
-    cameraDirectionSwitcher: {
-      top: 20,right: 20,
-      position: 'absolute',
-      padding: 7,
-      zIndex: 10,  
-      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
-      borderRadius: 999,
-    },
-    cameraInputSelector: {
-      position: 'absolute',
-      top: 20,
-      left: 20,
-      padding: 7,
-      zIndex: 10,
-      backgroundColor: darkModeActive?"#5a5a5a":"#FFFFFF", 
-      borderRadius: 999,
-    },
-    homeButton: {
-      padding: 6,
-      zIndex: 10,
-    },
-    detailsButton: {
-      position: 'absolute',
-      flexDirection:"row",
-      bottom: 20,
-      right: 20,
-      padding: 8,
-      zIndex: 10,
-      borderRadius:999,
-      borderWidth:1,
-      alignItems: 'center',
-      borderColor:green2,
-      backgroundColor:mainDisplaybackgroundColor
-    },
-    detailsButtonText: {
-      color:green2,
-      fontSize:18,
-      fontWeight:600,
-      margin:"auto",
-      paddingLeft:5,
-      paddingRight:5,
-    },manualInputContainer: {
-      flex: 1,
-      flexDirection:"row",
-      backgroundColor: mainDisplaybackgroundColor,
-      justifyContent: 'center',
-      alignItems: 'center',
-      paddingHorizontal: 20,
-    },manualInputButton: {
-      backgroundColor:green2,
-      color:"white",
-      borderRadius:999,
-      padding:8,
-    },
-    textInputManual: {
-      fontSize:18,
-      fontWeight:700,
-      width: 220,
-      height: "auto",
-      backgroundColor:mainDisplaybackgroundColor,
-      borderColor:"#959595",
-      borderWidth:buttonBorderWidth,
-      borderRadius:buttonBorderRadius,
-      color: textColor,
-      padding:11,
-      textAlign:"center"
-    },
-    animalSelectDropdownContainer: {
-      minHeight: 10,
-    },
-    animalSelectDropdown: {
-      width:180,
-      backgroundColor:backgroundColor,
-      borderRadius:buttonBorderRadius,
-      borderColor: selectedAnimal?green2:"#C4C4C4"
-    },
-    animalSelectDropdownItem: {
-      backgroundColor:backgroundColor,
-      width:180,
-    },
-    welcomeInfoText:{
-      color: textColor,
-      fontSize: 14,
-    },
-    productTitleText:{
-      fontSize:40,
-      fontWeight:800,
-      color:green2,
-    },
-    warningHeaderText:{
-      fontSize:25,
-      fontWeight:900,
-    },
-    warningContentText:{
-      paddingTop:8,
-      marginTop:8,
-      borderTopWidth:1,
-      borderColor:"#b3b3b3",
-      fontSize:20,
-      fontWeight:600,
-      color:textColor,
-    },
-    detailsTitle:{
-      color:green2,
-      fontSize:50,
-      fontWeight:800,
-      marginBottom:5
-    },
-    detailsSubHeader:{
-      fontSize:25,
-      fontWeight:900,
-    },detailsIngredientText:{
-      color:textColor,
-      fontSize:25,
-      fontWeight:500,
-    },detailsInfoText:{
-      color:textColor,
-      fontSize:18,
-      marginBottom:15,
-      marginTop:5
-    },scanningButton:{
-      backgroundColor:green1,
-      borderRadius:999,
-      height:"auto",
-      width:"auto",
-      padding:12
-    },settingsButton:{
-      backgroundColor:green1,
-      borderRadius:999,
-      position:"absolute",
-      padding:8,
-      height:"auto",
-      width:"auto",
-    },disclaimerText:{
-      fontSize: 14,
-      color:"#959595"
-    },logoWrapper: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      alignItems: 'center',
-    },petCreationSubHeader:{
-      color:textColor,
-      fontSize: 19,
-      fontWeight: 600,
-      alignSelf:"flex-end",
-      marginRight: 10
-    },settingsGridElement:{
-      width:"50%",
-      alignItems:"center"
-    },settingsGridElementContainer:{
-      flexDirection:"row",
-      alignItems:"center", 
-      margin:10
-    },animalCreateDropdown: {
-      borderRadius:buttonBorderRadius,
-      borderColor: deletePetName?green2:inputElementBorderColor,
-      width:"50%",backgroundColor:mainDisplaybackgroundColor
-    },animalCreateDropdownItem: {
-      borderColor: deletePetName?green2:inputElementBorderColor,
-      width:"50%",
-      backgroundColor:mainDisplaybackgroundColor
-    },closeModalButton:{
-      height:"8%",
-      backgroundColor:green1,
-      width:"100%",
-      alignItems:"center",
-      paddingTop:8
-    },settingElementContainer:{
-      width:"94%",
-      backgroundColor:mainDisplaybackgroundColor, 
-      padding:5, 
-      borderRadius:15,
-      margin:"3%"
-    }
-  });
 
   return (
 <SafeAreaProvider>
-  <View style={{flex: 1,backgroundColor: backgroundColor,}}>
+  <View style={{flex: 1,backgroundColor: colors.backgroundColor,}}>
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ title: "Overview", headerShown: false }} />      
       <View style={{flexDirection: 'row',
@@ -521,7 +275,7 @@ export default function Home() {
             style={styles.homeButton}
             onPress={() => {setScanning(false);setIngredientsFound(false);currentScannedCode.current = "";setCurrentManualCode("");setDetailsVisible(false)}}
           >
-            <Ionicons name="home" size={35} color={green2}/>
+            <Ionicons name="home" size={35} color={colors.green2}/>
           </TouchableOpacity>
         }
         <View style={styles.logoWrapper}>
@@ -533,9 +287,9 @@ export default function Home() {
         </View>
         <TouchableOpacity
             style={styles.homeButton}
-            onPress={() => toggleDarkMode(!darkModeActive)}
+            onPress={() => toggleTheme()}
           >
-            <Ionicons name={darkModeActive?"contrast-outline":"sunny"} size={darkModeActive?35:40} color={green1}/>
+            <Ionicons name={darkModeActive?"contrast-outline":"sunny"} size={darkModeActive?35:40} color={colors.green1}/>
           </TouchableOpacity>
         
       </View>
@@ -554,16 +308,19 @@ export default function Home() {
           setItems={setSelectableAnimals}
           placeholder="Select Pet"
           listMode="SCROLLVIEW"
-          style={styles.animalSelectDropdown}
-          textStyle={{color:green2,fontSize:25,fontWeight:600}}
+          style={[
+              styles.animalSelectDropdown,
+              { borderColor: selectedAnimal ? colors.green2 : '#C4C4C4' }
+          ]}
+          textStyle={{color:colors.green2,fontSize:25,fontWeight:600}}
           placeholderStyle={{ fontWeight: 600 , color: "#C4C4C4" }}
-          dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?green2:"#C4C4C4"}]}
+          dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?colors.green2:"#C4C4C4"}]}
           showTickIcon={false}
           ArrowDownIconComponent={({ style }) => (
-            <Ionicons name="caret-down" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
+            <Ionicons name="caret-down" size={20} color={selectedAnimal?colors.green2:"#C4C4C4"}/>
           )}
           ArrowUpIconComponent={({ style }) => (
-            <Ionicons name="caret-up" size={20} color={selectedAnimal?green2:"#C4C4C4"}/>
+            <Ionicons name="caret-up" size={20} color={selectedAnimal?colors.green2:"#C4C4C4"}/>
           )}
           onChangeValue={(value)=>{
             setSelectedAnimal(value?value:"")
@@ -583,7 +340,7 @@ export default function Home() {
                     style={[styles.manualInputSelector,{}]}
                     onPress={() => setShowCamera(false)}
                   >
-                    <Ionicons name="search" size={30} color={green1} />
+                    <Ionicons name="search" size={30} color={colors.green1} />
                   </TouchableOpacity>
                 {permission?.granted?(
                   <>
@@ -597,12 +354,12 @@ export default function Home() {
                         style={styles.cameraDirectionSwitcher}
                         onPress={() => setCamDirection(cam === 'back' ? 'front' : 'back')}
                       >
-                        <Ionicons name="camera-reverse" size={30} color={green1} />
+                        <Ionicons name="camera-reverse" size={30} color={colors.green1} />
                       </TouchableOpacity>     
                   </>
                 ):(
                   <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                    <Text style={{ color:textColor ,fontSize:20,fontWeight:600,marginBottom:20}}>We need camera permission</Text>
+                    <Text style={{ color:colors.textColor ,fontSize:20,fontWeight:600,marginBottom:20}}>We need camera permission</Text>
                     <Pressable 
                       onPress={requestPermission} 
                       style={styles.scanningButton}
@@ -618,7 +375,7 @@ export default function Home() {
                   style={styles.cameraInputSelector}
                   onPress={() => setShowCamera(true)}
                 >
-                  <Ionicons name="camera" size={30} color={green1} />
+                  <Ionicons name="camera" size={30} color={colors.green1} />
                 </TouchableOpacity>
                 <View style={styles.manualInputContainer}>
                   <TextInput
@@ -648,7 +405,7 @@ export default function Home() {
             {isLoadingData?(
               <View style={{flex:1,justifyContent: 'center',alignItems: 'center'}}>
                 <ActivityIndicator size="large" color="#ffffff"/>
-                <Text style={{fontSize:25,color:textColor,marginTop:40}}>Retrieving Data...</Text>
+                <Text style={{fontSize:25,color:colors.textColor,marginTop:40}}>Retrieving Data...</Text>
               </View>):
               (<>
                 {ingredientsFound?(
@@ -697,7 +454,7 @@ export default function Home() {
                             style={[styles.detailsButton]}
                             onPress={() => setDetailsVisible(false)}
                           >
-                            <Ionicons name="chevron-back" size={20} color={green2} />
+                            <Ionicons name="chevron-back" size={20} color={colors.green2} />
                             <Text style={styles.detailsButtonText}>Details</Text>
                         </TouchableOpacity>
                       </>
@@ -779,7 +536,7 @@ export default function Home() {
                             onPress={() => setDetailsVisible(true)}
                           >
                             <Text style={styles.detailsButtonText}>Details</Text>
-                            <Ionicons name="chevron-forward" size={20} color={green2} />
+                            <Ionicons name="chevron-forward" size={20} color={colors.green2} />
                           </TouchableOpacity>
                         }
                       </>
@@ -816,12 +573,12 @@ export default function Home() {
         animationType="slide"
         onRequestClose={() => setDonationsVisible(false)} // Android back button
       >
-        <View style={{flex: 1,backgroundColor: backgroundColor,alignItems: 'center',}}>
+        <View style={{flex: 1,backgroundColor: colors.backgroundColor,alignItems: 'center',}}>
           <View style={{height:"7%"}}></View>
           <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: 'white'}}>
             {isDonationWindowLoading && (
               <View style={{...StyleSheet.absoluteFillObject,backgroundColor: 'white',justifyContent: 'center',alignItems: 'center',zIndex: 1,}}>
-                <ActivityIndicator size="large" color={green1} />
+                <ActivityIndicator size="large" color={colors.green1} />
               </View>
             )}
             <WebView
@@ -842,14 +599,14 @@ export default function Home() {
         onRequestClose={() => setDonationsVisible(false)}
       >
         <Toast />
-        <View style={{flex: 1,backgroundColor: backgroundColor,alignItems: 'center',}}>
+        <View style={{flex: 1,backgroundColor: colors.backgroundColor,alignItems: 'center',}}>
           <View style={{height:"7%"}}></View>
-          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: backgroundColor}}>
+          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: colors.backgroundColor}}>
             <View style={{alignItems:"center",margin:20}}>
               <Text style={styles.productTitleText}>Settings</Text>
             </View>
             <ScrollView contentContainerStyle={{ paddingBottom: 70 }}>
-              <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
+              <Text style={{color:colors.textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
               <View style={styles.settingElementContainer}>
                 <View>
                   <View style={styles.settingsGridElementContainer}>                  
@@ -871,16 +628,16 @@ export default function Home() {
                         setItems={setPetTypes}
                         placeholder="Pet type"
                         listMode="SCROLLVIEW"
-                        style={[styles.animalSelectDropdown,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
-                        textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                        placeholderStyle={{ fontWeight: 600 , color: inputElementBorderColor }}
-                        dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?green2:inputElementBorderColor,width:"50%",backgroundColor:mainDisplaybackgroundColor}]}
+                        style={[styles.animalSelectDropdown,{borderColor: customPetType?colors.green2:colors.inputElementBorderColor,width:"50%",backgroundColor:colors.mainDisplaybackgroundColor}]}
+                        textStyle={{color:colors.green2,fontSize:20,fontWeight:600}}
+                        placeholderStyle={{ fontWeight: 600 , color: colors.inputElementBorderColor }}
+                        dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?colors.green2:colors.inputElementBorderColor,width:"50%",backgroundColor:colors.mainDisplaybackgroundColor}]}
                         showTickIcon={false}
                         ArrowDownIconComponent={({ style }) => (
-                          <Ionicons name="caret-down" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                          <Ionicons name="caret-down" size={20} color={customPetType?colors.green2:colors.inputElementBorderColor}/>
                         )}
                         ArrowUpIconComponent={({ style }) => (
-                          <Ionicons name="caret-up" size={20} color={customPetType?green2:inputElementBorderColor}/>
+                          <Ionicons name="caret-up" size={20} color={customPetType?colors.green2:colors.inputElementBorderColor}/>
                         )}
                       >
                       </DropDownPicker>
@@ -893,7 +650,7 @@ export default function Home() {
                     <View style={{width:"50%"}}>
                       <TextInput
                         autoCorrect={false}
-                        style={[styles.textInputManual,{width:"auto",borderColor:inputElementBorderColor}]}
+                        style={[styles.textInputManual,{width:"auto",borderColor:colors.inputElementBorderColor}]}
                         placeholderTextColor="#aaa"                    
                         value={customPetName}
                         onChangeText={setCustomPetName}
@@ -908,7 +665,7 @@ export default function Home() {
                       <Switch
                         value={isLactoseIntolerantSelected}
                         onValueChange={setIsLactoseIntolerantSelected}
-                        trackColor={{ false: backgroundColor, true: green1 }}
+                        trackColor={{ false: colors.backgroundColor, true: colors.green1 }}
                       />
                     </View>
                   </View>
@@ -953,7 +710,7 @@ export default function Home() {
                 </View>
                 
               </View> 
-              <Text style={{color:textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
+              <Text style={{color:colors.textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
               <View style={styles.settingElementContainer}>
                 <View style={styles.settingsGridElementContainer}>                  
                     
@@ -974,16 +731,16 @@ export default function Home() {
                       setItems={setSelectableAnimals}
                       placeholder="Pet"
                       listMode="SCROLLVIEW"
-                      style={styles.animalCreateDropdown}
-                      textStyle={{color:green2,fontSize:20,fontWeight:600}}
-                      placeholderStyle={{ fontWeight: 600 , color:inputElementBorderColor }}
-                      dropDownContainerStyle={styles.animalCreateDropdownItem}
+                      style={[styles.animalCreateDropdown,{borderColor: deletePetName ? colors.green2 : colors.inputElementBorderColor}]}
+                      textStyle={{color:colors.green2,fontSize:20,fontWeight:600}}
+                      placeholderStyle={{ fontWeight: 600 , color:colors.inputElementBorderColor }}
+                      dropDownContainerStyle={[styles.animalCreateDropdownItem,{borderColor: deletePetName ? colors.green2 : colors.inputElementBorderColor}]}
                       showTickIcon={false}
                       ArrowDownIconComponent={({ style }) => (
-                        <Ionicons name="caret-down" size={20} color={deletePetName?green2:inputElementBorderColor}/>
+                        <Ionicons name="caret-down" size={20} color={deletePetName?colors.green2:colors.inputElementBorderColor}/>
                       )}
                       ArrowUpIconComponent={({ style }) => (
-                        <Ionicons name="caret-up" size={20} color={deletePetName?green2:inputElementBorderColor}/>
+                        <Ionicons name="caret-up" size={20} color={deletePetName?colors.green2:colors.inputElementBorderColor}/>
                       )}
                       >
                     </DropDownPicker>
