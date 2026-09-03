@@ -12,19 +12,20 @@ import { WebView } from 'react-native-webview';
 import Toast, { BaseToast, ErrorToast , ToastProps } from 'react-native-toast-message';
 import {createStyles, getColors, themeColors} from '@/constants/Colors';
 import {useTheme} from "@/context/ThemeContext";
+import SettingsModal from "@/app/SettingsModal";
+import {AnimalTypeInfo} from "@/types/types";
+import DonationsModal from "@/app/DonationsModal";
+import BarcodeSelection from "@/app/BarcodeSelectionElement";
 
 
 export default function Home() {
     const {colors, toggleTheme, darkModeActive} = useTheme();
     const styles = createStyles(colors);
 
-  const [permission, requestPermission] = useCameraPermissions();
-  const [cam, setCamDirection] = useState<CameraType>("back");
   const [scanning, setScanning] = useState(false);
-  const [showCamera, setShowCamera] = useState(true);
   const [selectedAnimal, setSelectedAnimal] = useState("");
   const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
-  const [selectableAnimals, setSelectableAnimals] = useState([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
+  const [selectableAnimals, setSelectableAnimals] = useState<AnimalTypeInfo[]>([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
   let [ingredientsFound, setIngredientsFound] = useState(false)
   let [productNameView, setProductNameView] = useState(<></>);
   let [dangersView, setDangersView] = useState<string[]>([]);
@@ -36,43 +37,12 @@ export default function Home() {
   let [dangersViewEmpty, setDangersViewEmpty] = useState(true);
   let [notesViewEmpty, setNotesViewEmpty] = useState(true);
   let [isLoadingData, setIsLoadingData] = useState(false)
-  let [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false) 
   let [detailsVisible, setDetailsVisible] = useState(false)
   let [settingsVisible, setSettingsVisible] = useState(false)
   let [donationsVisible, setDonationsVisible] = useState(false)
-  let [currentManualCode, setCurrentManualCode] = useState("")
   const currentScannedCode = useRef("");
 
   let persistentDataLoaded = useRef(false)
-
-  let [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)
-  let [customPetName, setCustomPetName] = useState("")
-  let [customePetTypeSelectionVisible, setCustomePetTypeSelectionVisible] = useState(false)
-  let [customPetType, setCustomPetType] = useState("")
-  let [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
-
-  let [deletePetNameSelectionVisible, setDeletePetNameSelectionVisible] = useState(false)
-  let [deletePetName, setDeletePetName] = useState("")
-
-
-
-  const toastConfig = {
-  success: (props: ToastProps) => (
-    <BaseToast
-      {...props}
-      style={{ borderLeftColor: colors.green1 ,backgroundColor: colors.mainDisplaybackgroundColor,height:80}}
-      text1Style={{fontSize: 18,fontWeight:700,color:colors.textColor,paddingBottom:10}}
-      text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
-    />
-  ),
-  error: (props: ToastProps) => (
-    <ErrorToast 
-      {...props}
-      style={{ borderLeftColor: '#D27777',backgroundColor: colors.mainDisplaybackgroundColor,height:80}}
-      text1Style={{fontSize: 18,fontWeight:700,color:colors.textColor,paddingBottom:10}}
-      text2Style={{fontSize: 16,fontWeight:600,color:"#959595"}}
-    />
-  )}
 
   const getAnimalObject = () => {
     return Object.values(selectableAnimals).find((item) => item["value"] === selectedAnimal);
@@ -107,21 +77,15 @@ export default function Home() {
       persistentDataLoaded.current = true;
     }
     loadData()
-    if (!permission?.granted) {
-      requestPermission();
-    }
+
     
   }, []);
 
   const getJSON = async () => {
     setIsLoadingData(true)
-    if((currentScannedCode.current || currentManualCode) && selectedAnimal){
-      let code = ""
-      if(currentScannedCode.current){
-        code = currentScannedCode.current
-      }else{
-        code = currentManualCode
-      }
+    if(currentScannedCode.current && selectedAnimal){
+      let code = currentScannedCode.current;
+
       const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
 
       const json = await response.json();
@@ -132,14 +96,14 @@ export default function Home() {
 
         if(states_tags.includes("en:ingredients-completed")){
           let ingredientsTagsCollection = ""
-          
+
           for(let i = 0; i < json.product.allergens_hierarchy.length; i++){
             ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.allergens_hierarchy[i].slice(3));
           }
           for(let i = 0; i < json.product.ingredients_tags.length; i++){
             ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.ingredients_tags[i].slice(3));
           }
-        
+
           ingredientsTagsCollection = ingredientsTagsCollection + " " + (json.product.ingredients_text_en)
           ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
 
@@ -151,12 +115,12 @@ export default function Home() {
             let dangersDetails = []
             for(const danger of warnings.dangers){
               if(ingredientsTagsCollection.includes(danger.ingredient)){
-            
+
                 dangersNames.push(danger.name)
                 dangersDetails.push(danger.note)
-              }             
+              }
             }
-   
+
             for(const danger of warnings.additionalDangers as { name: string; note: string }[]){
                 dangersNames.push(danger.name)
                 dangersDetails.push(danger.note)
@@ -169,14 +133,14 @@ export default function Home() {
             }else{
               setDangersViewEmpty(true)
             }
-     
+
             let cautionsNames: (string)[] = []
             let cautionsDetails = []
             for(const caution of warnings.cautions){
               if(ingredientsTagsCollection.includes(caution.ingredient)){
                 cautionsNames.push(caution.name)
                 cautionsDetails.push(caution.note)
-              }            
+              }
             }
             for(const caution of warnings.additionalCautions as { name: string; note: string }[]){
                 cautionsNames.push(caution.name)
@@ -189,8 +153,8 @@ export default function Home() {
               setCautionsViewEmpty(false)
             }else{
               setCautionsViewEmpty(true)
-            }       
-            
+            }
+
             let notes: (string)[] = []
             for(const note of warnings.notes as  {note: string }[]){
               notes.push(note.note)
@@ -203,19 +167,19 @@ export default function Home() {
               setNotesViewEmpty(true)
             }
           }
-        
+
           if(json.product.product_name){
             setProductNameView(json.product.product_name)
           }else{
             setProductNameView(json.product.product_name_en)
           }
-          
+
           setIngredientsFound(true)
           setScanning(false);
         }else{
           setIngredientsFound(false)
           alert("The ingredients could not be found");
-        }       
+        }
       } else {
         Alert.alert(
         "Product not found",
@@ -228,8 +192,8 @@ export default function Home() {
           {
             text: "Yes",
             onPress: () => {
-              const appStoreUrl = "https://apps.apple.com/us/app/open-food-facts-product-scan/id588797948"; 
-              const playStoreUrl = "https://play.google.com/store/apps/details?id=org.openfoodfacts.scanner"; 
+              const appStoreUrl = "https://apps.apple.com/us/app/open-food-facts-product-scan/id588797948";
+              const playStoreUrl = "https://play.google.com/store/apps/details?id=org.openfoodfacts.scanner";
 
               const url = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
@@ -247,17 +211,9 @@ export default function Home() {
         text1: 'Error',
         text2: 'No pet selected.',
       });
-    } 
-    setIsLoadingData(false)     
-  }  
-
-  const handleBarCodeScanned = ({ type, data }: { type: string; data: string }) => {
-    if(currentScannedCode.current != data){
-      setIsLoadingData(true)
-      currentScannedCode.current = data;
-      getJSON();     
     }
-  };
+    setIsLoadingData(false)
+  }
 
   return (
 <SafeAreaProvider>
@@ -273,7 +229,7 @@ export default function Home() {
           <View></View>
           :<TouchableOpacity
             style={styles.homeButton}
-            onPress={() => {setScanning(false);setIngredientsFound(false);currentScannedCode.current = "";setCurrentManualCode("");setDetailsVisible(false)}}
+            onPress={() => {setScanning(false);setIngredientsFound(false);currentScannedCode.current = "";setDetailsVisible(false)}}
           >
             <Ionicons name="home" size={35} color={colors.green2}/>
           </TouchableOpacity>
@@ -300,10 +256,6 @@ export default function Home() {
           value={selectedAnimal}
           items={selectableAnimals}
           setOpen={setAnimalSelectionVisible}
-          onOpen={()=>{
-            setCustomePetTypeSelectionVisible(false)
-            setDeletePetNameSelectionVisible(false)
-          }}
           setValue={setSelectedAnimal}
           setItems={setSelectableAnimals}
           placeholder="Select Pet"
@@ -333,73 +285,11 @@ export default function Home() {
       <View style={{height:20}}></View>    
       <View style={styles.inputContainer}>
         {scanning ? (
-          <>
-            {showCamera ? (
-              <> 
-                  <TouchableOpacity
-                    style={[styles.manualInputSelector,{}]}
-                    onPress={() => setShowCamera(false)}
-                  >
-                    <Ionicons name="search" size={30} color={colors.green1} />
-                  </TouchableOpacity>
-                {permission?.granted?(
-                  <>
-                    <CameraView
-                      facing={cam}
-                      onBarcodeScanned={handleBarCodeScanned}
-                      style={styles.camera}
-                      videoStabilizationMode="standard"
-                    />       
-                      <TouchableOpacity
-                        style={styles.cameraDirectionSwitcher}
-                        onPress={() => setCamDirection(cam === 'back' ? 'front' : 'back')}
-                      >
-                        <Ionicons name="camera-reverse" size={30} color={colors.green1} />
-                      </TouchableOpacity>     
-                  </>
-                ):(
-                  <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                    <Text style={{ color:colors.textColor ,fontSize:20,fontWeight:600,marginBottom:20}}>We need camera permission</Text>
-                    <Pressable 
-                      onPress={requestPermission} 
-                      style={styles.scanningButton}
-                    >
-                      <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Grant Permission</Text>
-                    </Pressable>
-                  </View>
-                )}
-              </>
-            ) : (
-              <>
-                <TouchableOpacity
-                  style={styles.cameraInputSelector}
-                  onPress={() => setShowCamera(true)}
-                >
-                  <Ionicons name="camera" size={30} color={colors.green1} />
-                </TouchableOpacity>
-                <View style={styles.manualInputContainer}>
-                  <TextInput
-                    placeholder="Enter barcode"
-                    placeholderTextColor="#aaa"                    
-                    style={styles.textInputManual}
-                    value={currentManualCode}
-                    autoCorrect={false}
-                    onChangeText={(text) => {setCurrentManualCode(text)}}
-                  />
-                  <Pressable onPress={() => {
-                    Keyboard.dismiss();
-                    if(currentManualCode != ""){
-                      getJSON()
-                    }
-                  }}      
-                  style={{marginLeft:10}}         
-                  >
-                    <Ionicons name="search" size={27} style={styles.manualInputButton}></Ionicons>
-                  </Pressable>
-                </View>
-              </>
-            )}
-          </>
+          <BarcodeSelection
+            getJSON={getJSON}
+            currentScannedCode={currentScannedCode}
+            setIsLoadingData={setIsLoadingData}
+          />
         ) : (
           <>
             {isLoadingData?(
@@ -561,245 +451,20 @@ export default function Home() {
           <Pressable  style={[styles.settingsButton,{left:10}]} onPress={() => {setDonationsVisible(true)}}>
             <Image source={require("../assets/images/donation-Logo.png")} style={{width: 25, height: 25,tintColor: "#FFFFFF",margin:1 }}/>
           </Pressable>
-          <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);currentScannedCode.current = "";setCurrentManualCode("");setDetailsVisible(false)}}>
+          <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);currentScannedCode.current = "";setDetailsVisible(false)}}>
             <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>{scanning ? "Cancel" : "Scan Barcode"}</Text>
           </Pressable>
           <Pressable  style={[styles.settingsButton,{right:10}]} onPress={() => {setSettingsVisible(true)}}>
             <Ionicons name="settings" size={27} color={"#FFFFFF"} />
           </Pressable>
       </View>
-      <Modal
-        visible={donationsVisible}
-        animationType="slide"
-        onRequestClose={() => setDonationsVisible(false)} // Android back button
-      >
-        <View style={{flex: 1,backgroundColor: colors.backgroundColor,alignItems: 'center',}}>
-          <View style={{height:"7%"}}></View>
-          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: 'white'}}>
-            {isDonationWindowLoading && (
-              <View style={{...StyleSheet.absoluteFillObject,backgroundColor: 'white',justifyContent: 'center',alignItems: 'center',zIndex: 1,}}>
-                <ActivityIndicator size="large" color={colors.green1} />
-              </View>
-            )}
-            <WebView
-              source={{ uri: 'https://ko-fi.com/yakoto' }}
-              style={{ flex: 1}}
-              onLoadStart={() => setIsDonationWindowLoading(true)}
-              onLoadEnd={() => setIsDonationWindowLoading(false)}
-            />
-          </View>
-          <Pressable  style={styles.closeModalButton} onPress={() => {setDonationsVisible(false)}}>
-            <Text style={{height:"auto", fontSize:30, fontWeight:700,color:"white"}}>Close</Text>
-          </Pressable>
-        </View>
-      </Modal>
-      <Modal
-        visible={settingsVisible}
-        animationType="slide"
-        onRequestClose={() => setDonationsVisible(false)}
-      >
-        <Toast />
-        <View style={{flex: 1,backgroundColor: colors.backgroundColor,alignItems: 'center',}}>
-          <View style={{height:"7%"}}></View>
-          <View style={{height: '85%', width:"100%", borderTopEndRadius:15, borderTopStartRadius:15,overflow: 'hidden',backgroundColor: colors.backgroundColor}}>
-            <View style={{alignItems:"center",margin:20}}>
-              <Text style={styles.productTitleText}>Settings</Text>
-            </View>
-            <ScrollView contentContainerStyle={{ paddingBottom: 70 }}>
-              <Text style={{color:colors.textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Create Custom Pet</Text>
-              <View style={styles.settingElementContainer}>
-                <View>
-                  <View style={styles.settingsGridElementContainer}>                  
-                    
-                    <View style={styles.settingsGridElement}>
-                      <Text style={styles.petCreationSubHeader}>Pet type:</Text>
-                    </View>
-                    <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
-                      <DropDownPicker
-                        open={customePetTypeSelectionVisible}
-                        value={customPetType}
-                        items={petTypes}
-                        setOpen={setCustomePetTypeSelectionVisible}
-                        setValue={setCustomPetType}
-                        onOpen={()=>{
-                          setAnimalSelectionVisible(false)
-                          setDeletePetNameSelectionVisible(false)
-                        }}
-                        setItems={setPetTypes}
-                        placeholder="Pet type"
-                        listMode="SCROLLVIEW"
-                        style={[styles.animalSelectDropdown,{borderColor: customPetType?colors.green2:colors.inputElementBorderColor,width:"50%",backgroundColor:colors.mainDisplaybackgroundColor}]}
-                        textStyle={{color:colors.green2,fontSize:20,fontWeight:600}}
-                        placeholderStyle={{ fontWeight: 600 , color: colors.inputElementBorderColor }}
-                        dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: customPetType?colors.green2:colors.inputElementBorderColor,width:"50%",backgroundColor:colors.mainDisplaybackgroundColor}]}
-                        showTickIcon={false}
-                        ArrowDownIconComponent={({ style }) => (
-                          <Ionicons name="caret-down" size={20} color={customPetType?colors.green2:colors.inputElementBorderColor}/>
-                        )}
-                        ArrowUpIconComponent={({ style }) => (
-                          <Ionicons name="caret-up" size={20} color={customPetType?colors.green2:colors.inputElementBorderColor}/>
-                        )}
-                      >
-                      </DropDownPicker>
-                    </View>
-                  </View>
-                  <View style={styles.settingsGridElementContainer}>
-                    <View style={styles.settingsGridElement}>
-                      <Text style={styles.petCreationSubHeader}>Pet name:</Text>
-                    </View>
-                    <View style={{width:"50%"}}>
-                      <TextInput
-                        autoCorrect={false}
-                        style={[styles.textInputManual,{width:"auto",borderColor:colors.inputElementBorderColor}]}
-                        placeholderTextColor="#aaa"                    
-                        value={customPetName}
-                        onChangeText={setCustomPetName}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.settingsGridElementContainer}>
-                    <View style={styles.settingsGridElement}>
-                      <Text style={styles.petCreationSubHeader}>Lactose intolerant:</Text>
-                    </View>
-                    <View style={styles.settingsGridElement}>
-                      <Switch
-                        value={isLactoseIntolerantSelected}
-                        onValueChange={setIsLactoseIntolerantSelected}
-                        trackColor={{ false: colors.backgroundColor, true: colors.green1 }}
-                      />
-                    </View>
-                  </View>
-                  <View style={styles.settingsGridElementContainer}>
-                    <View style={styles.settingsGridElement}></View>
-                    <View style={styles.settingsGridElement}>
-                      <Pressable  style={styles.scanningButton}  onPress={()=>{
-                        Keyboard.dismiss();
-                        if(customPetName !== "" && customPetType){
-                          setSelectableAnimals(prevAnimals => {
-                            const newValue = [...prevAnimals, { label: customPetName, value: customPetName.toLowerCase(), type:customPetType, lactoseOkay: isLactoseIntolerantSelected }];
-                            SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
-                            return newValue
-                          });
-                          setIsLactoseIntolerantSelected(false)
-                          setCustomPetName("")
-                          setCustomPetType("")
-                      
-                          Toast.show({
-                          type: 'success',
-                          text1: 'Success',
-                          text2: 'Pet "'+customPetName+'" was created.',
-                          });
-                        }if(!customPetType){
-                          Toast.show({
-                            type: 'error',
-                            text1: 'Error',
-                            text2: 'No pet type given.',
-                          });
-                        }else{
-                          Toast.show({
-                            type: 'error',
-                            text1: 'Error',
-                            text2: 'No pet name given.',
-                          });
-                        }
-                      }}>
-                        <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Create Pet</Text>
-                      </Pressable>
-                    </View>
-                  </View>
-                </View>
-                
-              </View> 
-              <Text style={{color:colors.textColor,fontSize: 30,fontWeight: 800,alignSelf:"center"}}>Delete Pet</Text>
-              <View style={styles.settingElementContainer}>
-                <View style={styles.settingsGridElementContainer}>                  
-                    
-                  <View style={styles.settingsGridElement}>
-                    <Text style={styles.petCreationSubHeader}>Pet:</Text>
-                  </View>
-                  <View style={[styles.animalSelectDropdownContainer,{width:"100%"}]}>
-                    <DropDownPicker
-                      open={deletePetNameSelectionVisible}
-                      value={deletePetName}
-                      items={selectableAnimals}
-                      setOpen={setDeletePetNameSelectionVisible}
-                      setValue={setDeletePetName}
-                      onOpen={()=>{
-                        setCustomePetTypeSelectionVisible(false)
-                        setAnimalSelectionVisible(false)
-                      }}
-                      setItems={setSelectableAnimals}
-                      placeholder="Pet"
-                      listMode="SCROLLVIEW"
-                      style={[styles.animalCreateDropdown,{borderColor: deletePetName ? colors.green2 : colors.inputElementBorderColor}]}
-                      textStyle={{color:colors.green2,fontSize:20,fontWeight:600}}
-                      placeholderStyle={{ fontWeight: 600 , color:colors.inputElementBorderColor }}
-                      dropDownContainerStyle={[styles.animalCreateDropdownItem,{borderColor: deletePetName ? colors.green2 : colors.inputElementBorderColor}]}
-                      showTickIcon={false}
-                      ArrowDownIconComponent={({ style }) => (
-                        <Ionicons name="caret-down" size={20} color={deletePetName?colors.green2:colors.inputElementBorderColor}/>
-                      )}
-                      ArrowUpIconComponent={({ style }) => (
-                        <Ionicons name="caret-up" size={20} color={deletePetName?colors.green2:colors.inputElementBorderColor}/>
-                      )}
-                      >
-                    </DropDownPicker>
-                  </View>
-                </View>
-                <View style={[styles.settingsGridElementContainer,{margin:0}]}>
-                  <View style={styles.settingsGridElement}>
-                    <Text style={styles.petCreationSubHeader}>Pet type:</Text>
-                  </View>
-                  <View style={styles.settingsGridElement}>
-                    <Text style={[styles.petCreationSubHeader,{alignSelf:"center"}]}>
-                      {Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.charAt(0).toUpperCase()}{Object.values(selectableAnimals).find((item) => item["value"] === deletePetName)?.type.slice(1)}
-                    </Text>
-                  </View>
-                </View>
-                <View style={styles.settingsGridElementContainer}>
-                  <View style={styles.settingsGridElement}></View>
-                  <View style={styles.settingsGridElement}>
-                    <Pressable  style={styles.scanningButton}  
-                      onPress={()=>{
-                        if(deletePetName !== ""){
-                          setSelectableAnimals( () => {
-                            const newValue = selectableAnimals.filter(item => item.value !== deletePetName);
-                            SecureStore.setItemAsync('selectableAnimals', JSON.stringify(newValue));
-                            return newValue
-                          });
-                          
-                          Toast.show({
-                            type: 'success',
-                            text1: 'Success',
-                            text2: 'Animal "'+deletePetName+'" deleted.',
-                          });
-                          setDeletePetName("")
-                        }else{
-                          Toast.show({
-                            type: 'error',
-                            text1: 'Error',
-                            text2: 'No pet selected to delete.',
-                          });
-                        } 
-                      }}
-                    >
-                      <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>Delete Pet</Text>
-                    </Pressable>
-                  </View>
-                </View>
-              </View> 
-            </ScrollView>
-            
-            <Pressable style={{position:"absolute",bottom:5,left:5}} onPress={() => Linking.openURL('https://leonard-arnold.site/petoo/Petoo_Privacy_Policy.pdf')}>
-              <Text style={{ color:"#959595",padding:10}}>Privacy Policy</Text>
-            </Pressable>
-          </View>
-          <Pressable  style={styles.closeModalButton} onPress={() => {setSettingsVisible(false)}}>
-            <Text style={{height:"auto", fontSize:30, fontWeight:700,color:"white"}}>Close</Text>
-          </Pressable>
-        </View>
-        <Toast config={toastConfig}/>
-      </Modal>
+        <DonationsModal setDonationsVisible={setDonationsVisible} donationsVisible={donationsVisible}/>
+      <SettingsModal
+          settingsVisible={settingsVisible}
+          setSettingsVisible={setSettingsVisible}
+          setSelectableAnimals={setSelectableAnimals}
+          selectableAnimals={selectableAnimals}
+      />
     </SafeAreaView>
   </View>
 </SafeAreaProvider>
