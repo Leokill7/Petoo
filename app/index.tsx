@@ -42,7 +42,6 @@ export default function Home() {
   let [settingsVisible, setSettingsVisible] = useState(false)
   let [donationsVisible, setDonationsVisible] = useState(false)
     const [selectedBarcode, setSelectedBarcode] = useState<string>("");
-  //const currentScannedCode = useRef("");
 
   let persistentDataLoaded = useRef(false)
 
@@ -93,11 +92,10 @@ export default function Home() {
   
   function getResultsForSelectedAnimal(){
       if(selectedProductInfo == null){
-          return
+          return;
       }
 
-      let states_tags = []
-        states_tags = selectedProductInfo.states_tags
+      let states_tags = selectedProductInfo.states_tags;
 
         if(states_tags.includes("en:ingredients-completed")){
             let ingredientsTagsCollection = ""
@@ -111,6 +109,7 @@ export default function Home() {
 
             ingredientsTagsCollection = ingredientsTagsCollection + " " + (selectedProductInfo.ingredients_text_en)
             ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
+
 
             let animal = getAnimalObject()
 
@@ -164,7 +163,7 @@ export default function Home() {
                 for(const note of warnings.notes as  {note: string }[]){
                     notes.push(note.note)
                 }
-                alert(notes.length)
+
                 if(notes.length>0){
                     setNotesViewEmpty(false)
                     setNotesView(notes)
@@ -197,7 +196,7 @@ export default function Home() {
 
       const json = await response.json();
 
-      if (json.status == 1) {
+      if (json.status === "success") {
           try{
               setSelectedProductInfo(json.product)
           }catch(err){
