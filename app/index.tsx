@@ -1,77 +1,30 @@
 import { Ionicons } from '@expo/vector-icons';
-import { CameraType, CameraView, useCameraPermissions } from "expo-camera";
 import { Stack } from "expo-router";
-import {useRef, useState, useEffect, useContext} from 'react';
-import { Image,Switch, Keyboard,Linking, Platform,Alert,Modal,ActivityIndicator,  Pressable, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View,useColorScheme  } from "react-native";
+import {useState} from 'react';
+import { Image,ActivityIndicator,  Pressable,  Text,  TouchableOpacity, View } from "react-native";
 import DropDownPicker from 'react-native-dropdown-picker';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { getWarningsVariable } from '../scripts/customScript';
-import * as SecureStore from 'expo-secure-store';
-import { WebView } from 'react-native-webview';
-import Toast, { BaseToast, ErrorToast , ToastProps } from 'react-native-toast-message';
-import {createStyles, getColors, themeColors} from '@/constants/Colors';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
+import {createStyles} from '@/constants/Colors';
 import {useTheme} from "@/context/ThemeContext";
 import SettingsModal from "@/app/SettingsModal";
-import {AnimalTypeInfo, OpenFoodFactsProductResponse} from "@/types/types";
 import DonationsModal from "@/app/DonationsModal";
 import BarcodeSelection from "@/app/BarcodeSelectionElement";
 import ResultsView from "@/app/ResultsView";
 import {useAnimal} from "@/context/AnimalContext";
 import {useProductInfo} from "@/context/ProductInfoContext";
-import {isLoaded} from "expo-font";
 
 
 export default function Home() {
     const {colors, toggleTheme, darkModeActive} = useTheme();
     const styles = createStyles(colors);
-    const {selectedAnimal, setSelectedAnimal, selectableAnimals, setSelectableAnimals} = useAnimal();
+    const {selectedAnimal, setSelectedAnimal, selectableAnimals} = useAnimal();
     const {isLoadingProductData, selectedProductInfo,setSelectedProductInfo} = useProductInfo()
 
-  const [scanning, setScanning] = useState(false);
-  const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
+    const [scanning, setScanning] = useState(false);
+    const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
     const [settingsVisible, setSettingsVisible] = useState(false)
     const [donationsVisible, setDonationsVisible] = useState(false)
 
-
-
-    useEffect(() => {
-        console.log("-----------")
-        console.log("scanning",scanning);
-        console.log("isLoadingProductData",isLoadingProductData);
-    }, [scanning,isLoadingProductData]);
-
-  useEffect(() => {
-    const loadAnimal = async () => {
-      try {
-        const storedMode = await SecureStore.getItemAsync('selectedItem');
-        if (storedMode !== null) {
-          const parsed = JSON.parse(storedMode);
-          if(parsed != ""){
-            setSelectedAnimal(parsed);
-          } 
-        }
-      } catch (e) {}
-    };
-    const loadSelectableAnimals = async () => {
-      try {
-        const storedMode = await SecureStore.getItemAsync('selectableAnimals');
-        if (storedMode !== null) {
-          const parsed = JSON.parse(storedMode);
-          if(parsed != ""){
-            setSelectableAnimals(parsed);
-          } 
-        }
-      } catch (e) {}
-    };
-    const loadData = async () => {
-      await loadAnimal()
-      loadSelectableAnimals()
-    }
-    loadData()
-
-    
-  }, []);
 
   return (
 <SafeAreaProvider>
@@ -181,7 +134,6 @@ export default function Home() {
           <Pressable
               style={styles.scanningButton}
               onPress={() => {
-                  console.log(selectedAnimal);
                   if(!scanning && selectedAnimal == "") {
                       alert("Please select an animal")
                   }else{
@@ -199,8 +151,6 @@ export default function Home() {
       <SettingsModal
           settingsVisible={settingsVisible}
           setSettingsVisible={setSettingsVisible}
-          setSelectableAnimals={setSelectableAnimals}
-          selectableAnimals={selectableAnimals}
       />
     </SafeAreaView>
   </View>

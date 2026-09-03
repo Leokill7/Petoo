@@ -1,9 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import {Alert, Linking, Platform, useColorScheme} from "react-native";
 import * as SecureStore from "expo-secure-store";
-import {createStyles, getColors, ThemeColors, themeColors} from '@/constants/Colors';
-import {AnimalTypeInfo, OpenFoodFactsProductResponse} from "@/types/types";
-import Toast from "react-native-toast-message";
+import {AnimalTypeInfo} from "@/types/types";
 
 type AnimalContextValue = {
     setSelectedAnimal: React.Dispatch<React.SetStateAction<string>>;
@@ -27,11 +24,22 @@ export function AnimalProvider({
         async function getLastSelectedAnimal(){
             setSelectedAnimal(await SecureStore.getItemAsync('selectedItem') || "");
         }
+        const loadSelectableAnimals = async () => {
+            try {
+                const storedMode = await SecureStore.getItemAsync('selectableAnimals');
+                if (storedMode !== null) {
+                    const parsed = JSON.parse(storedMode);
+                    if(parsed != ""){
+                        setSelectableAnimals(parsed);
+                    }
+                }
+            } catch (e) {}
+        };
+        loadSelectableAnimals();
         getLastSelectedAnimal();
     }, []);
 
     useEffect(() => {
-        console.log(selectedAnimal);
         SecureStore.setItemAsync('selectedItem', selectedAnimal);
     }, [selectedAnimal]);
 

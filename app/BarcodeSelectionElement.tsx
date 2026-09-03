@@ -3,13 +3,13 @@ import {Ionicons} from "@expo/vector-icons";
 import {CameraType, CameraView, useCameraPermissions} from "expo-camera";
 import {useTheme} from "@/context/ThemeContext";
 import {createStyles} from "@/constants/Colors";
-import {RefObject, useEffect, useState} from "react";
+import {useEffect, useState} from "react";
 import {useProductInfo} from "@/context/ProductInfoContext";
 
 export default function BarcodeSelection({setScanning}:{setScanning: (scanning: boolean) => void}) {
-    const {colors, toggleTheme, darkModeActive} = useTheme();
+    const {colors} = useTheme();
     const styles = createStyles(colors);
-    const {searchForBarcode, isLoadingProductData, selectedProductInfo} = useProductInfo()
+    const {searchForBarcode} = useProductInfo()
 
     const [permission, requestPermission] = useCameraPermissions();
     const [camDirection, setCamDirection] = useState<CameraType>("back");

@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
 import * as SecureStore from "expo-secure-store";
-import {createStyles, getColors, ThemeColors, themeColors} from '@/constants/Colors';
+import {getColors, ThemeColors} from '@/constants/Colors';
 
 type ThemeContextValue = {
     darkModeActive: boolean;

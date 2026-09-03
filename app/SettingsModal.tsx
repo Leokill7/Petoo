@@ -6,20 +6,19 @@ import * as SecureStore from "expo-secure-store";
 import {useTheme} from "@/context/ThemeContext";
 import {createStyles} from '@/constants/Colors';
 import {useState} from "react";
-import {AnimalTypeInfo} from "@/types/types";
+import {useAnimal} from "@/context/AnimalContext";
 
 export default function SettingsModal(
-    {settingsVisible, setSettingsVisible, setSelectableAnimals, selectableAnimals}
+    {settingsVisible, setSettingsVisible}
     :
     {
         settingsVisible:boolean,
-        setSettingsVisible:(arg0:boolean) => void,
-        setSelectableAnimals:(arg0:AnimalTypeInfo[]) => void,
-        selectableAnimals:AnimalTypeInfo[],
+        setSettingsVisible:(arg0:boolean) => void
     }
 ) {
-    const {colors, toggleTheme, darkModeActive} = useTheme();
+    const {colors} = useTheme();
     const styles = createStyles(colors);
+    const {selectableAnimals, setSelectableAnimals} = useAnimal();
 
     const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
     const [isLactoseIntolerantSelected, setIsLactoseIntolerantSelected] = useState(false)

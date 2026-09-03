@@ -9,7 +9,7 @@ import {useAnimal} from "@/context/AnimalContext";
 
 export default function ResultsView(){
     const {getAnimalObject} = useAnimal();
-    const {colors, toggleTheme, darkModeActive} = useTheme();
+    const {colors} = useTheme();
     const styles = createStyles(colors);
     const {selectedProductInfo} = useProductInfo()
     const {selectedAnimal} = useAnimal();

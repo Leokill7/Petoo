@@ -1,9 +1,6 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
-import {Alert, Linking, Platform, useColorScheme} from "react-native";
-import * as SecureStore from "expo-secure-store";
-import {createStyles, getColors, ThemeColors, themeColors} from '@/constants/Colors';
+import React, { createContext, useContext, useState } from "react";
+import {Alert, Linking, Platform} from "react-native";
 import {OpenFoodFactsProductResponse} from "@/types/types";
-import Toast from "react-native-toast-message";
 import {useAnimal} from "@/context/AnimalContext";
 
 type ProductInfoContextValue = {

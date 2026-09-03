@@ -1,6 +1,6 @@
 import {ActivityIndicator, Modal, Pressable, StyleSheet, Text, View} from "react-native";
 import {WebView} from "react-native-webview";
-import {createStyles, getColors, themeColors} from '@/constants/Colors';
+import {createStyles} from '@/constants/Colors';
 import {useTheme} from "@/context/ThemeContext";
 import {useState} from "react";
 
