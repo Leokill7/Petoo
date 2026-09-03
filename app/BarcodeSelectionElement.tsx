@@ -4,20 +4,12 @@ import {CameraType, CameraView, useCameraPermissions} from "expo-camera";
 import {useTheme} from "@/context/ThemeContext";
 import {createStyles} from "@/constants/Colors";
 import {RefObject, useEffect, useState} from "react";
+import {useProductInfo} from "@/context/ProductInfoContext";
 
-export default function BarcodeSelection({
-    selectedBarcode,
-    getJSON,
-    setIsLoadingData,
-                                             setSelectedBarcode
-                                         }:{
-    getJSON: () => Promise<void>;
-    selectedBarcode:string;
-    setSelectedBarcode:(selectedBarcode:string) => void;
-    setIsLoadingData: (isLoading: boolean) => void;
-}) {
+export default function BarcodeSelection({setScanning}:{setScanning: (scanning: boolean) => void}) {
     const {colors, toggleTheme, darkModeActive} = useTheme();
     const styles = createStyles(colors);
+    const {searchForBarcode, isLoadingProductData, selectedProductInfo} = useProductInfo()
 
     const [permission, requestPermission] = useCameraPermissions();
     const [camDirection, setCamDirection] = useState<CameraType>("back");
@@ -29,15 +21,6 @@ export default function BarcodeSelection({
             requestPermission();
         }
     },[])
-
-
-    const searchWithBarcode = (barcode: string) => {
-        if(selectedBarcode != barcode){
-            setIsLoadingData(true)
-            setSelectedBarcode(barcode);
-            getJSON();
-        }
-    }
 
     return(
         <>
@@ -53,7 +36,10 @@ export default function BarcodeSelection({
                         <>
                             <CameraView
                                 facing={camDirection}
-                                onBarcodeScanned={( scanningResult ) => searchWithBarcode(scanningResult.data)}
+                                onBarcodeScanned={( scanningResult ) => {
+                                    setScanning(false)
+                                    searchForBarcode(scanningResult.data)
+                                }}
                                 style={styles.camera}
                                 videoStabilizationMode="standard"
                             />
@@ -96,7 +82,8 @@ export default function BarcodeSelection({
                         <Pressable onPress={() => {
                             Keyboard.dismiss();
                             if(currentManualCode != ""){
-                                searchWithBarcode(currentManualCode);
+                                setScanning(false)
+                                searchForBarcode(currentManualCode);
                             }
                         }}
                                    style={{marginLeft:10}}

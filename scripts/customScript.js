@@ -33,20 +33,20 @@ function getDogWarnings(productInfo,animal){
     return warnings
 }
 
-function getCatWarnings(json,animal){
+function getCatWarnings(productInfo,animal){
 
     let warnings = catWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
-    if(isAlcoholic(json)){
+    if(isAlcoholic(productInfo)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
-    if(hasLactose(json) && animal.lactoseIntolerant){
+    if(hasLactose(productInfo) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Many cats are lactose intolerant."})    
     }
 
-    let vegeterian = isVegeterian(json)
+    let vegeterian = isVegeterian(productInfo)
     let catergoriesString = ""
     for(let i = 0; i < productInfo.categories_hierarchy.length;i++){
         catergoriesString = catergoriesString + productInfo.categories_hierarchy[i];
@@ -56,7 +56,7 @@ function getCatWarnings(json,animal){
         if(vegeterian === true){
             warnings.additionalCautions.push({name:"Vegetarian",note:"Cats are carnivores and should not be fed vegetarian food."})    
         }else if(vegeterian === null){
-            warnings.notes.push({note:"Vegetarian status not found!"})
+            warnings.notes.push({note:"Unclear if product is vegetarian."})
         }
     }
     
