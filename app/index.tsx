@@ -13,7 +13,7 @@ import Toast, { BaseToast, ErrorToast , ToastProps } from 'react-native-toast-me
 import {createStyles, getColors, themeColors} from '@/constants/Colors';
 import {useTheme} from "@/context/ThemeContext";
 import SettingsModal from "@/app/SettingsModal";
-import {AnimalTypeInfo} from "@/types/types";
+import {AnimalTypeInfo, OpenFoodFactsProductResponse} from "@/types/types";
 import DonationsModal from "@/app/DonationsModal";
 import BarcodeSelection from "@/app/BarcodeSelectionElement";
 
@@ -22,12 +22,13 @@ export default function Home() {
     const {colors, toggleTheme, darkModeActive} = useTheme();
     const styles = createStyles(colors);
 
+    const [selectedProductInfo, setSelectedProductInfo] = useState<OpenFoodFactsProductResponse>();
   const [scanning, setScanning] = useState(false);
   const [selectedAnimal, setSelectedAnimal] = useState("");
   const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
   const [selectableAnimals, setSelectableAnimals] = useState<AnimalTypeInfo[]>([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
   let [ingredientsFound, setIngredientsFound] = useState(false)
-  let [productNameView, setProductNameView] = useState(<></>);
+  let [productNameView, setProductNameView] = useState("");
   let [dangersView, setDangersView] = useState<string[]>([]);
   let [cautionsView, setCautionsView] = useState<string[]>([]);
   let [notesView, setNotesView] = useState<string[]>([]);
@@ -40,13 +41,22 @@ export default function Home() {
   let [detailsVisible, setDetailsVisible] = useState(false)
   let [settingsVisible, setSettingsVisible] = useState(false)
   let [donationsVisible, setDonationsVisible] = useState(false)
-  const currentScannedCode = useRef("");
+    const [selectedBarcode, setSelectedBarcode] = useState<string>("");
+  //const currentScannedCode = useRef("");
 
   let persistentDataLoaded = useRef(false)
 
   const getAnimalObject = () => {
     return Object.values(selectableAnimals).find((item) => item["value"] === selectedAnimal);
   }
+
+    useEffect(() => {
+        getResultsForSelectedAnimal()
+    }, [selectedProductInfo, selectedAnimal]);
+
+    useEffect(() => {
+        getJSON();
+    }, [selectedBarcode]);
 
   useEffect(() => {
     const loadAnimal = async () => {
@@ -80,106 +90,121 @@ export default function Home() {
 
     
   }, []);
+  
+  function getResultsForSelectedAnimal(){
+      if(selectedProductInfo == null){
+          return
+      }
+
+      let states_tags = []
+        states_tags = selectedProductInfo.states_tags
+
+        if(states_tags.includes("en:ingredients-completed")){
+            let ingredientsTagsCollection = ""
+
+            for(let i = 0; i < selectedProductInfo.allergens_hierarchy.length; i++){
+                ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.allergens_hierarchy[i].slice(3));
+            }
+            for(let i = 0; i < selectedProductInfo.ingredients_tags.length; i++){
+                ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.ingredients_tags[i].slice(3));
+            }
+
+            ingredientsTagsCollection = ingredientsTagsCollection + " " + (selectedProductInfo.ingredients_text_en)
+            ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
+
+            let animal = getAnimalObject()
+
+            const warnings = getWarningsVariable(selectedProductInfo,animal)
+            if(warnings){
+                let dangersNames: (string)[] = []
+                let dangersDetails = []
+                for(const danger of warnings.dangers){
+                    if(ingredientsTagsCollection.includes(danger.ingredient)){
+
+                        dangersNames.push(danger.name)
+                        dangersDetails.push(danger.note)
+                    }
+                }
+
+                for(const danger of warnings.additionalDangers as { name: string; note: string }[]){
+                    dangersNames.push(danger.name)
+                    dangersDetails.push(danger.note)
+                }
+
+                if(dangersNames.length>0){
+                    setDangersView(dangersNames);
+                    setDangersDetails(dangersDetails);
+                    setDangersViewEmpty(false)
+                }else{
+                    setDangersViewEmpty(true)
+                }
+
+                let cautionsNames: (string)[] = []
+                let cautionsDetails = []
+                for(const caution of warnings.cautions){
+                    if(ingredientsTagsCollection.includes(caution.ingredient)){
+                        cautionsNames.push(caution.name)
+                        cautionsDetails.push(caution.note)
+                    }
+                }
+                for(const caution of warnings.additionalCautions as { name: string; note: string }[]){
+                    cautionsNames.push(caution.name)
+                    cautionsDetails.push(caution.note)
+                }
+
+                if(cautionsNames.length>0){
+                    setCautionsView(cautionsNames);
+                    setCautionsDetails(cautionsDetails);
+                    setCautionsViewEmpty(false)
+                }else{
+                    setCautionsViewEmpty(true)
+                }
+
+                let notes: (string)[] = []
+                for(const note of warnings.notes as  {note: string }[]){
+                    notes.push(note.note)
+                }
+                alert(notes.length)
+                if(notes.length>0){
+                    setNotesViewEmpty(false)
+                    setNotesView(notes)
+                }else{
+                    setNotesViewEmpty(true)
+                }
+            }
+
+            if(selectedProductInfo.product_name){
+                setProductNameView(selectedProductInfo.product_name)
+            }else{
+                setProductNameView(selectedProductInfo.product_name_en)
+            }
+
+            setIngredientsFound(true)
+            setScanning(false);
+        }else{
+            setIngredientsFound(false)
+            alert("The ingredients could not be found");
+        }
+    }
+
+
 
   const getJSON = async () => {
     setIsLoadingData(true)
-    if(currentScannedCode.current && selectedAnimal){
-      let code = currentScannedCode.current;
+    if(selectedBarcode && selectedAnimal){
 
-      const response = await fetch(`https://world.openfoodfacts.org/api/v0/product/${code}.json`);
+      const response = await fetch(`https://world.openfoodfacts.org/api/v3/product/${selectedBarcode}.json`);
 
       const json = await response.json();
 
       if (json.status == 1) {
-        let states_tags = []
-        states_tags = json.product.states_tags
-
-        if(states_tags.includes("en:ingredients-completed")){
-          let ingredientsTagsCollection = ""
-
-          for(let i = 0; i < json.product.allergens_hierarchy.length; i++){
-            ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.allergens_hierarchy[i].slice(3));
-          }
-          for(let i = 0; i < json.product.ingredients_tags.length; i++){
-            ingredientsTagsCollection=ingredientsTagsCollection  + " "+(json.product.ingredients_tags[i].slice(3));
+          try{
+              setSelectedProductInfo(json.product)
+          }catch(err){
+              console.log(err)
+              Alert.alert("Something went wrong","This Product may not be supported.")
           }
 
-          ingredientsTagsCollection = ingredientsTagsCollection + " " + (json.product.ingredients_text_en)
-          ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
-
-          let animal = getAnimalObject()
-
-          const warnings = getWarningsVariable(json,animal)
-          if(warnings){
-            let dangersNames: (string)[] = []
-            let dangersDetails = []
-            for(const danger of warnings.dangers){
-              if(ingredientsTagsCollection.includes(danger.ingredient)){
-
-                dangersNames.push(danger.name)
-                dangersDetails.push(danger.note)
-              }
-            }
-
-            for(const danger of warnings.additionalDangers as { name: string; note: string }[]){
-                dangersNames.push(danger.name)
-                dangersDetails.push(danger.note)
-            }
-
-            if(dangersNames.length>0){
-              setDangersView(dangersNames);
-              setDangersDetails(dangersDetails);
-              setDangersViewEmpty(false)
-            }else{
-              setDangersViewEmpty(true)
-            }
-
-            let cautionsNames: (string)[] = []
-            let cautionsDetails = []
-            for(const caution of warnings.cautions){
-              if(ingredientsTagsCollection.includes(caution.ingredient)){
-                cautionsNames.push(caution.name)
-                cautionsDetails.push(caution.note)
-              }
-            }
-            for(const caution of warnings.additionalCautions as { name: string; note: string }[]){
-                cautionsNames.push(caution.name)
-                cautionsDetails.push(caution.note)
-            }
-
-            if(cautionsNames.length>0){
-              setCautionsView(cautionsNames);
-              setCautionsDetails(cautionsDetails);
-              setCautionsViewEmpty(false)
-            }else{
-              setCautionsViewEmpty(true)
-            }
-
-            let notes: (string)[] = []
-            for(const note of warnings.notes as  {note: string }[]){
-              notes.push(note.note)
-            }
-            alert(notes.length)
-            if(notes.length>0){
-              setNotesViewEmpty(false)
-              setNotesView(notes)
-            }else{
-              setNotesViewEmpty(true)
-            }
-          }
-
-          if(json.product.product_name){
-            setProductNameView(json.product.product_name)
-          }else{
-            setProductNameView(json.product.product_name_en)
-          }
-
-          setIngredientsFound(true)
-          setScanning(false);
-        }else{
-          setIngredientsFound(false)
-          alert("The ingredients could not be found");
-        }
       } else {
         Alert.alert(
         "Product not found",
@@ -229,7 +254,7 @@ export default function Home() {
           <View></View>
           :<TouchableOpacity
             style={styles.homeButton}
-            onPress={() => {setScanning(false);setIngredientsFound(false);currentScannedCode.current = "";setDetailsVisible(false)}}
+            onPress={() => {setScanning(false);setIngredientsFound(false);setDetailsVisible(false)}}
           >
             <Ionicons name="home" size={35} color={colors.green2}/>
           </TouchableOpacity>
@@ -287,7 +312,8 @@ export default function Home() {
         {scanning ? (
           <BarcodeSelection
             getJSON={getJSON}
-            currentScannedCode={currentScannedCode}
+            selectedBarcode={selectedBarcode}
+            setSelectedBarcode={setSelectedBarcode}
             setIsLoadingData={setIsLoadingData}
           />
         ) : (
@@ -451,7 +477,7 @@ export default function Home() {
           <Pressable  style={[styles.settingsButton,{left:10}]} onPress={() => {setDonationsVisible(true)}}>
             <Image source={require("../assets/images/donation-Logo.png")} style={{width: 25, height: 25,tintColor: "#FFFFFF",margin:1 }}/>
           </Pressable>
-          <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);currentScannedCode.current = "";setDetailsVisible(false)}}>
+          <Pressable  style={styles.scanningButton} onPress={() => {setScanning(!scanning);setDetailsVisible(false)}}>
             <Text style={{color:"#FFFFFF",fontSize:18,fontWeight:700}}>{scanning ? "Cancel" : "Scan Barcode"}</Text>
           </Pressable>
           <Pressable  style={[styles.settingsButton,{right:10}]} onPress={() => {setSettingsVisible(true)}}>

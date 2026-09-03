@@ -4,7 +4,7 @@ import DropDownPicker from "react-native-dropdown-picker";
 import {Ionicons} from "@expo/vector-icons";
 import * as SecureStore from "expo-secure-store";
 import {useTheme} from "@/context/ThemeContext";
-import {createStyles, getColors, themeColors} from '@/constants/Colors';
+import {createStyles} from '@/constants/Colors';
 import {useState} from "react";
 import {AnimalTypeInfo} from "@/types/types";
 

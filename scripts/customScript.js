@@ -1,12 +1,12 @@
-export function getWarningsVariable(json,selectedAnimalObject){
+export function getWarningsVariable(productInfo,selectedAnimalObject){
 
     switch (selectedAnimalObject.type) {
       case "dog":
-        return getDogWarnings(json,selectedAnimalObject);
+        return getDogWarnings(productInfo,selectedAnimalObject);
       case "cat":          
-          return getCatWarnings(json,selectedAnimalObject)
+          return getCatWarnings(productInfo,selectedAnimalObject)
       case "guinea-pig":          
-          return getGuineaPigWarnings(json,selectedAnimalObject)
+          return getGuineaPigWarnings(productInfo,selectedAnimalObject)
       default:
         break;
     }
@@ -14,20 +14,20 @@ export function getWarningsVariable(json,selectedAnimalObject){
 
 
 
-function getDogWarnings(json,animal){
+function getDogWarnings(productInfo,animal){
     let warnings = dogWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
     
-    if(json.product.nutriments.fat_100g > 25){
+    if(productInfo.nutriments.fat_100g > 25){
         warnings.additionalCautions.push({name:"Fat", note:"The product contains much fat. This can lead to obesity, diarrhea and vomiting."})
     }
-    if(isAlcoholic(json)){
+    if(isAlcoholic(productInfo)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
 
-    if(hasLactose(json) && animal.lactoseIntolerant){
+    if(hasLactose(productInfo) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Many dogs are lactose intolerant."})    
     }
     return warnings
@@ -48,8 +48,8 @@ function getCatWarnings(json,animal){
 
     let vegeterian = isVegeterian(json)
     let catergoriesString = ""
-    for(let i = 0; i < json.product.categories_hierarchy.length;i++){
-        catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
+    for(let i = 0; i < productInfo.categories_hierarchy.length;i++){
+        catergoriesString = catergoriesString + productInfo.categories_hierarchy[i];
     }
 
     if(catergoriesString.includes("beverages") == false){
@@ -63,28 +63,28 @@ function getCatWarnings(json,animal){
     return warnings
 }
 
-function getGuineaPigWarnings(json,animal){
+function getGuineaPigWarnings(productInfo,animal){
 
     let warnings = guineaPigsWarnings
     warnings.additionalCautions = []
     warnings.additionalDangers = []
     warnings.notes = []
 
-    if(isAlcoholic(json)){
+    if(isAlcoholic(productInfo)){
         warnings.additionalDangers.push({name:"Alcohol",note:"Alcohol can cause vomiting, shortness of breath and coordination problems."})    
     }
 
-    if(hasLactose(json) && animal.lactoseIntolerant){
+    if(hasLactose(productInfo) && animal.lactoseIntolerant){
         warnings.additionalCautions.push({name:"Lactose",note:"Guinea pigs are lactose intolerant."})    
     }
 
     let catergoriesString = ""
-    for(let i = 0; i < json.product.categories_hierarchy.length;i++){
-        catergoriesString = catergoriesString + json.product.categories_hierarchy[i];
+    for(let i = 0; i < productInfo.categories_hierarchy.length;i++){
+        catergoriesString = catergoriesString + productInfo.categories_hierarchy[i];
     }
 
     if(!catergoriesString.includes("beverage")){
-        let vegeterian = isVegeterian(json)
+        let vegeterian = isVegeterian(productInfo)
         if(vegeterian === false){
             warnings.additionalDangers.push({name:"Meat",note:"Guinea pigs are hebrivores and should not eat meat."})    
         }else if(vegeterian === null){
@@ -95,10 +95,10 @@ function getGuineaPigWarnings(json,animal){
     return warnings
 }
 
-function isAlcoholic(json){
+function isAlcoholic(productInfo){
     let categoriesString = ""
-    for(let  i = 0; i < json.product.categories_tags.length;i++){
-        categoriesString = categoriesString + json.product.categories_tags[i]
+    for(let  i = 0; i < productInfo.categories_tags.length;i++){
+        categoriesString = categoriesString + productInfo.categories_tags[i]
     }
 
     if((categoriesString.includes("alcoholic-beverages")||categoriesString.includes("alcoholic")||categoriesString.includes("wines"))&& categoriesString.includes("!non-alcoholic-beverages")){
@@ -107,15 +107,15 @@ function isAlcoholic(json){
     return false;
 }
 
-function isVegeterian(json){
+function isVegeterian(productInfo){
     let categoriesString = ""
 
-    if(!json.product.ingredients_analysis_tags){
+    if(!productInfo.ingredients_analysis_tags){
         return null
     }
 
-    for(let  i = 0; i < json.product.ingredients_analysis_tags.length;i++){
-        categoriesString = categoriesString + json.product.ingredients_analysis_tags[i]
+    for(let  i = 0; i < productInfo.ingredients_analysis_tags.length;i++){
+        categoriesString = categoriesString + productInfo.ingredients_analysis_tags[i]
     }
 
     if(categoriesString.includes("non-vegetarian")){
@@ -129,10 +129,10 @@ function isVegeterian(json){
     return null;
 }
 
-function hasLactose(json){
+function hasLactose(productInfo){
     let categoriesString = ""
-    for(let  i = 0; i < json.product.categories_tags.length;i++){
-        categoriesString = categoriesString + json.product.categories_tags[i]
+    for(let  i = 0; i < productInfo.categories_tags.length;i++){
+        categoriesString = categoriesString + productInfo.categories_tags[i]
     }
 
     if((categoriesString.includes("dairy")||categoriesString.includes("dairies")) && !categoriesString.includes("dairy-substitutes")){

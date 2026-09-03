@@ -6,12 +6,14 @@ import {createStyles} from "@/constants/Colors";
 import {RefObject, useEffect, useState} from "react";
 
 export default function BarcodeSelection({
-    currentScannedCode,
+    selectedBarcode,
     getJSON,
-    setIsLoadingData
+    setIsLoadingData,
+                                             setSelectedBarcode
                                          }:{
     getJSON: () => Promise<void>;
-    currentScannedCode:RefObject<string>;
+    selectedBarcode:string;
+    setSelectedBarcode:(selectedBarcode:string) => void;
     setIsLoadingData: (isLoading: boolean) => void;
 }) {
     const {colors, toggleTheme, darkModeActive} = useTheme();
@@ -28,10 +30,11 @@ export default function BarcodeSelection({
         }
     },[])
 
+
     const searchWithBarcode = (barcode: string) => {
-        if(currentScannedCode.current != barcode){
+        if(selectedBarcode != barcode){
             setIsLoadingData(true)
-            currentScannedCode.current = barcode;
+            setSelectedBarcode(barcode);
             getJSON();
         }
     }

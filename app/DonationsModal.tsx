@@ -15,7 +15,7 @@ export default function DonationsModal(
         donationsVisible:boolean
     }
 ) {
-    const {colors, toggleTheme, darkModeActive} = useTheme();
+    const {colors} = useTheme();
     const styles = createStyles(colors);
 
     let [isDonationWindowLoading, setIsDonationWindowLoading] = useState(false)
