@@ -31,10 +31,13 @@ export default function Home() {
   <View style={{flex: 1,backgroundColor: colors.backgroundColor,}}>
     <SafeAreaView style={styles.container}>
       <Stack.Screen options={{ title: "Overview", headerShown: false }} />      
-      <View style={{flexDirection: 'row',
-        justifyContent:"space-between",
-        alignItems: 'center', // vertical alignment
-        position: 'relative',height:50}}
+      <View
+          style={{
+              flexDirection: 'row',
+            justifyContent:"space-between",
+            alignItems: 'center',
+            position: 'relative',height:50
+        }}
       >
         {(selectedProductInfo == undefined&&!isLoadingProductData&&!scanning)?
           <View></View>
