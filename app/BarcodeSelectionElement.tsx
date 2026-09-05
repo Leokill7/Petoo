@@ -77,7 +77,10 @@ export default function BarcodeSelection({setScanning}:{setScanning: (scanning: 
                             style={styles.textInputManual}
                             value={currentManualCode}
                             autoCorrect={false}
-                            onChangeText={(text) => {setCurrentManualCode(text)}}
+                            onChangeText={(text) => {
+                                const numericOnly = text.replace(/[^0-9]/g, '');
+                                setCurrentManualCode(numericOnly);
+                            }}
                         />
                         <Pressable onPress={() => {
                             Keyboard.dismiss();

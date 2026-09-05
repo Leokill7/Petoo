@@ -8,6 +8,7 @@ type AnimalContextValue = {
     selectableAnimals: AnimalTypeInfo[];
     setSelectableAnimals: (selectableAnimals: AnimalTypeInfo[]) => void;
     getAnimalObject: () => AnimalTypeInfo|undefined;
+    petTypes: {label:string, value:string}[];
 };
 
 const AnimalContext = createContext<AnimalContextValue | null>(null);
@@ -19,6 +20,7 @@ export function AnimalProvider({
 }) {
     const [selectableAnimals, setSelectableAnimals] = useState<AnimalTypeInfo[]>([{label:"Dog", value:"dog",type:"dog",lactoseOkay:false},{label:"Cat",type:"cat", value:"cat",lactoseOkay:false},{label:"Guinea Pig",type:"guinea-pig", value:"guinea-pig",lactoseOkay:false}]);
     const [selectedAnimal, setSelectedAnimal] = useState<string>("");
+    const [petTypes, setPetTypes] = useState([{label:"Dog", value:"dog"},{label:"Cat", value:"cat"},{label:"Guinea Pig", value:"guinea-pig"}])
 
     useEffect(() => {
         async function getLastSelectedAnimal(){
@@ -38,7 +40,7 @@ export function AnimalProvider({
             }
         };
         loadSelectableAnimals();
-        getLastSelectedAnimal();
+        //getLastSelectedAnimal();
     }, []);
 
     useEffect(() => {
@@ -56,7 +58,8 @@ export function AnimalProvider({
                 selectedAnimal,
                 selectableAnimals,
                 setSelectableAnimals,
-                getAnimalObject
+                getAnimalObject,
+                petTypes
             }}
         >
             {children}

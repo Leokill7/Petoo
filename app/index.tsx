@@ -21,6 +21,8 @@ export default function Home() {
     const [scanning, setScanning] = useState(false);
     const [animalSelectionVisible, setAnimalSelectionVisible] = useState(false);
 
+    const [noAnimalSelected, setNoAnimalSelected] = useState(false);
+
   return (
 <SafeAreaProvider>
   <View style={{flex: 1,backgroundColor: colors.backgroundColor}}>
@@ -69,19 +71,26 @@ export default function Home() {
           listMode="SCROLLVIEW"
           style={[
               styles.animalSelectDropdown,
-              { borderColor: selectedAnimal ? colors.green2 : '#C4C4C4' }
+              { borderColor: noAnimalSelected?colors.errorRed:selectedAnimal ? colors.green2 : colors.textColor }
           ]}
-          textStyle={{color:colors.green2,fontSize:25,fontWeight:600}}
-          placeholderStyle={{ fontWeight: 600 , color: "#C4C4C4" }}
-          dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: selectedAnimal?colors.green2:"#C4C4C4"}]}
+          selectedItemLabelStyle={{
+              color: colors.green2,
+          }}
+          selectedItemContainerStyle={{
+              backgroundColor: colors.green1 + '20',
+          }}
+          textStyle={{color:selectedAnimal?colors.green2:colors.textColor,fontSize:25,fontWeight:600}}
+          placeholderStyle={{ fontWeight: 600 , color: colors.inputElementBorderColor }}
+          dropDownContainerStyle={[styles.animalSelectDropdownItem,{borderColor: noAnimalSelected?colors.errorRed:selectedAnimal?colors.green2:colors.textColor}]}
           showTickIcon={false}
           ArrowDownIconComponent={() => (
-            <Ionicons name="caret-down" size={20} color={selectedAnimal?colors.green2:"#C4C4C4"}/>
+            <Ionicons name="caret-down" size={20} color={selectedAnimal?colors.green2:colors.textColor}/>
           )}
           ArrowUpIconComponent={() => (
-            <Ionicons name="caret-up" size={20} color={selectedAnimal?colors.green2:"#C4C4C4"}/>
+            <Ionicons name="caret-up" size={20} color={selectedAnimal?colors.green2:colors.textColor}/>
           )}
           onChangeValue={(value)=>{
+              setNoAnimalSelected(false)
             setSelectedAnimal(value?value:"")
           }}
           >
@@ -101,9 +110,15 @@ export default function Home() {
                   :
                   selectedProductInfo === undefined?
                       <View style={{margin:"7%",flex:1,justifyContent:"space-between"}}>
-                          <Text style={[styles.welcomeInfoText,{fontSize:20,fontWeight:600}]}>{"Welcome"}</Text>
                           <View>
-                              <Text style={[styles.disclaimerText,{fontSize:18,fontWeight:600}]}>{"Disclaimer"}</Text>
+                              <Text style={[styles.welcomeInfoText,{fontSize:20,fontWeight:600}]}>{"Welcome to Petoo"}</Text>
+                              <View style={{height:"20%"}}></View>
+                              <Text style={{color:colors.textColor, fontSize: 16}}>{"Choose your pet, scan any barcode and see potential risks in seconds"}</Text>
+                              <View style={{height:"5%"}}></View>
+                              <Text style={{color:colors.textColor, fontSize: 16}}>{"Go to Settings to personalize your pet's profile"}</Text>
+                          </View>
+                          <View>
+                              <Text style={[styles.disclaimerText,{fontSize:16,fontWeight:600}]}>{"Disclaimer"}</Text>
                               <Text style={styles.disclaimerText}>{"Always do your own research and double check. We do not take responsibility for what you are feeding to your pet."}</Text>
                           </View>
                       </View>
@@ -121,8 +136,10 @@ export default function Home() {
               style={styles.scanningButton}
               onPress={() => {
                   if(!scanning && selectedAnimal === "") {
+                      setNoAnimalSelected(true)
                       alert("Please select an animal")
                   }else{
+                      setNoAnimalSelected(false)
                     setScanning(!scanning);
                   }
               }}

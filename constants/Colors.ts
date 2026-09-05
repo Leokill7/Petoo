@@ -11,6 +11,7 @@ export interface ThemeColors {
     textColor: string;
     inputElementBorderColor: string;
     selectorBackground: string;
+    errorRed: string;
 }
 
 export const themeColors = {
@@ -22,6 +23,7 @@ export const themeColors = {
         textColor: '#686868',
         inputElementBorderColor: '#999999',
         selectorBackground: '#FFFFFF',
+        errorRed: "#FF0000",
     },
     dark: {
         green1: '#9AB286',
@@ -31,6 +33,7 @@ export const themeColors = {
         textColor: '#CFCFCF',
         inputElementBorderColor: '#999999',
         selectorBackground: '#5a5a5a',
+        errorRed: "#bc1717",
     },
 } as const;
 
@@ -51,7 +54,7 @@ export const createStyles = (colors: ThemeColors) => StyleSheet.create({
     detailsButtonText: { color: colors.green2, fontSize: 18, fontWeight: '600', margin: 'auto', paddingLeft: 5, paddingRight: 5 },
     manualInputContainer: { flex: 1, flexDirection: 'row', backgroundColor: colors.mainDisplaybackgroundColor, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
     manualInputButton: { backgroundColor: colors.green2, color: 'white', borderRadius: 999, padding: 8 },
-    textInputManual: { fontSize: 18, fontWeight: '700', width: 220, height: 'auto', backgroundColor: colors.mainDisplaybackgroundColor, borderColor: '#959595', borderWidth: buttonBorderWidth, borderRadius: buttonBorderRadius, color: colors.textColor, padding: 11, textAlign: 'center' },
+    textInputManual: { fontSize: 18, fontWeight: '700', width: 220, height: 'auto', backgroundColor: colors.mainDisplaybackgroundColor, borderColor: colors.inputElementBorderColor, borderWidth: buttonBorderWidth, borderRadius: buttonBorderRadius, color: colors.textColor, padding: 11, textAlign: 'center' },
     animalSelectDropdownContainer: { minHeight: 10, height: "7%" },
     animalSelectDropdown: { width: 180, backgroundColor: colors.backgroundColor, borderRadius: buttonBorderRadius },
     animalSelectDropdownItem: { backgroundColor: colors.backgroundColor, width: 180 },
@@ -65,9 +68,9 @@ export const createStyles = (colors: ThemeColors) => StyleSheet.create({
     detailsInfoText: { color: colors.textColor, fontSize: 18, marginBottom: 15, marginTop: 5 },
     scanningButton: { backgroundColor: colors.green1, borderRadius: 999, height: 'auto', width: 'auto', padding: 12 },
     settingsButton: { backgroundColor: colors.green1, borderRadius: 999, position: 'absolute', padding: 8, height: 'auto', width: 'auto' },
-    disclaimerText: { fontSize: 14, color: '#959595' },
+    disclaimerText: { fontSize: 13, color: colors.inputElementBorderColor },
     logoWrapper: { position: 'absolute', left: 0, right: 0, alignItems: 'center' },
-    petCreationSubHeader: { color: colors.textColor, fontSize: 19, fontWeight: '600', alignSelf: 'flex-end', marginRight: 10 },
+    petCreationSubHeader: { color: colors.textColor, fontSize: 19, fontWeight: '600', alignSelf: 'flex-end', marginRight: 10, textAlign:"right" },
     settingsGridElement: { width: '50%', alignItems: 'center' },
     settingsGridElementContainer: { flexDirection: 'row', alignItems: 'center', margin: 10 },
     animalCreateDropdown: { borderRadius: buttonBorderRadius, borderColor: colors.inputElementBorderColor, width: '50%', backgroundColor: colors.mainDisplaybackgroundColor },
