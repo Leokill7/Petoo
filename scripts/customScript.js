@@ -52,7 +52,7 @@ function getCatWarnings(productInfo,animal){
         catergoriesString = catergoriesString + productInfo.categories_hierarchy[i];
     }
 
-    if(catergoriesString.includes("beverages") == false){
+    if(catergoriesString.includes("beverages") === false){
         if(vegeterian === true){
             warnings.additionalCautions.push({name:"Vegetarian",note:"Cats are carnivores and should not be fed vegetarian food."})    
         }else if(vegeterian === null){
@@ -101,10 +101,8 @@ function isAlcoholic(productInfo){
         categoriesString = categoriesString + productInfo.categories_tags[i]
     }
 
-    if((categoriesString.includes("alcoholic-beverages")||categoriesString.includes("alcoholic")||categoriesString.includes("wines"))&& categoriesString.includes("!non-alcoholic-beverages")){
-        return true;
-    }
-    return false;
+    return (categoriesString.includes("alcoholic-beverages") || categoriesString.includes("alcoholic") || categoriesString.includes("wines")) && categoriesString.includes("!non-alcoholic-beverages");
+
 }
 
 function isVegeterian(productInfo){
@@ -135,10 +133,8 @@ function hasLactose(productInfo){
         categoriesString = categoriesString + productInfo.categories_tags[i]
     }
 
-    if((categoriesString.includes("dairy")||categoriesString.includes("dairies")) && !categoriesString.includes("dairy-substitutes")){
-        return true;
-    }
-    return false;
+    return (categoriesString.includes("dairy") || categoriesString.includes("dairies")) && !categoriesString.includes("dairy-substitutes");
+
 }
 
 

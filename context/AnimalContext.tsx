@@ -29,11 +29,13 @@ export function AnimalProvider({
                 const storedMode = await SecureStore.getItemAsync('selectableAnimals');
                 if (storedMode !== null) {
                     const parsed = JSON.parse(storedMode);
-                    if(parsed != ""){
+                    if(parsed !== ""){
                         setSelectableAnimals(parsed);
                     }
                 }
-            } catch (e) {}
+            } catch (e) {
+                console.error(e);
+            }
         };
         loadSelectableAnimals();
         getLastSelectedAnimal();

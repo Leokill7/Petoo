@@ -26,102 +26,104 @@ export default function ResultsView(){
     let [detailsVisible, setDetailsVisible] = useState(false)
 
     useEffect(() => {
-        if(selectedProductInfo != undefined && selectedAnimal != ""){
+        function getResultsForSelectedAnimal(){
+            if(selectedProductInfo == null){
+                return;
+            }
+
+            let states_tags = selectedProductInfo.states_tags;
+
+            if(states_tags.includes("en:ingredients-completed")){
+                let ingredientsTagsCollection = ""
+
+                for(let i = 0; i < selectedProductInfo.allergens_hierarchy.length; i++){
+                    ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.allergens_hierarchy[i].slice(3));
+                }
+                for(let i = 0; i < selectedProductInfo.ingredients_tags.length; i++){
+                    ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.ingredients_tags[i].slice(3));
+                }
+
+                ingredientsTagsCollection = ingredientsTagsCollection + " " + (selectedProductInfo.ingredients_text_en)
+                ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
+
+
+                let animal = getAnimalObject()
+
+                const warnings = getWarningsVariable(selectedProductInfo,animal)
+                if(warnings){
+                    let dangersNames: (string)[] = []
+                    let dangersDetails = []
+                    for(const danger of warnings.dangers){
+                        if(ingredientsTagsCollection.includes(danger.ingredient)){
+
+                            dangersNames.push(danger.name)
+                            dangersDetails.push(danger.note)
+                        }
+                    }
+
+                    for(const danger of warnings.additionalDangers as { name: string; note: string }[]){
+                        dangersNames.push(danger.name)
+                        dangersDetails.push(danger.note)
+                    }
+
+                    if(dangersNames.length>0){
+                        setDangersView(dangersNames);
+                        setDangersDetails(dangersDetails);
+                        setDangersViewEmpty(false)
+                    }else{
+                        setDangersViewEmpty(true)
+                    }
+
+                    let cautionsNames: (string)[] = []
+                    let cautionsDetails = []
+                    for(const caution of warnings.cautions){
+                        if(ingredientsTagsCollection.includes(caution.ingredient)){
+                            cautionsNames.push(caution.name)
+                            cautionsDetails.push(caution.note)
+                        }
+                    }
+                    for(const caution of warnings.additionalCautions as { name: string; note: string }[]){
+                        cautionsNames.push(caution.name)
+                        cautionsDetails.push(caution.note)
+                    }
+
+                    if(cautionsNames.length>0){
+                        setCautionsView(cautionsNames);
+                        setCautionsDetails(cautionsDetails);
+                        setCautionsViewEmpty(false)
+                    }else{
+                        setCautionsViewEmpty(true)
+                    }
+
+                    let notes: (string)[] = []
+                    for(const note of warnings.notes as  {note: string }[]){
+                        notes.push(note.note)
+                    }
+
+                    if(notes.length>0){
+                        setNotesViewEmpty(false)
+                        setNotesView(notes)
+                    }else{
+                        setNotesViewEmpty(true)
+                    }
+                }
+
+                if(selectedProductInfo.product_name){
+                    setProductNameView(selectedProductInfo.product_name)
+                }else{
+                    setProductNameView(selectedProductInfo.product_name_en)
+                }
+            }else{
+                alert("The ingredients could not be found");
+            }
+        }
+
+        if(selectedProductInfo !== undefined && selectedAnimal !== ""){
             getResultsForSelectedAnimal()
         }
     },[selectedProductInfo,selectedAnimal])
 
-    function getResultsForSelectedAnimal(){
-        if(selectedProductInfo == null){
-            return;
-        }
 
-        let states_tags = selectedProductInfo.states_tags;
-
-        if(states_tags.includes("en:ingredients-completed")){
-            let ingredientsTagsCollection = ""
-
-            for(let i = 0; i < selectedProductInfo.allergens_hierarchy.length; i++){
-                ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.allergens_hierarchy[i].slice(3));
-            }
-            for(let i = 0; i < selectedProductInfo.ingredients_tags.length; i++){
-                ingredientsTagsCollection=ingredientsTagsCollection  + " "+(selectedProductInfo.ingredients_tags[i].slice(3));
-            }
-
-            ingredientsTagsCollection = ingredientsTagsCollection + " " + (selectedProductInfo.ingredients_text_en)
-            ingredientsTagsCollection = ingredientsTagsCollection.replace(/-/g, " ").toLowerCase()
-
-
-            let animal = getAnimalObject()
-
-            const warnings = getWarningsVariable(selectedProductInfo,animal)
-            if(warnings){
-                let dangersNames: (string)[] = []
-                let dangersDetails = []
-                for(const danger of warnings.dangers){
-                    if(ingredientsTagsCollection.includes(danger.ingredient)){
-
-                        dangersNames.push(danger.name)
-                        dangersDetails.push(danger.note)
-                    }
-                }
-
-                for(const danger of warnings.additionalDangers as { name: string; note: string }[]){
-                    dangersNames.push(danger.name)
-                    dangersDetails.push(danger.note)
-                }
-
-                if(dangersNames.length>0){
-                    setDangersView(dangersNames);
-                    setDangersDetails(dangersDetails);
-                    setDangersViewEmpty(false)
-                }else{
-                    setDangersViewEmpty(true)
-                }
-
-                let cautionsNames: (string)[] = []
-                let cautionsDetails = []
-                for(const caution of warnings.cautions){
-                    if(ingredientsTagsCollection.includes(caution.ingredient)){
-                        cautionsNames.push(caution.name)
-                        cautionsDetails.push(caution.note)
-                    }
-                }
-                for(const caution of warnings.additionalCautions as { name: string; note: string }[]){
-                    cautionsNames.push(caution.name)
-                    cautionsDetails.push(caution.note)
-                }
-
-                if(cautionsNames.length>0){
-                    setCautionsView(cautionsNames);
-                    setCautionsDetails(cautionsDetails);
-                    setCautionsViewEmpty(false)
-                }else{
-                    setCautionsViewEmpty(true)
-                }
-
-                let notes: (string)[] = []
-                for(const note of warnings.notes as  {note: string }[]){
-                    notes.push(note.note)
-                }
-
-                if(notes.length>0){
-                    setNotesViewEmpty(false)
-                    setNotesView(notes)
-                }else{
-                    setNotesViewEmpty(true)
-                }
-            }
-
-            if(selectedProductInfo.product_name){
-                setProductNameView(selectedProductInfo.product_name)
-            }else{
-                setProductNameView(selectedProductInfo.product_name_en)
-            }
-        }else{
-            alert("The ingredients could not be found");
-        }
-    }
 
     return (
         <View>
@@ -135,7 +137,7 @@ export default function ResultsView(){
                                 (<>
                                     <Text style={[styles.detailsSubHeader,{color:"#D27777"}]}>DANGER</Text>
                                     {dangersDetails.map((item, index) => {
-                                        const wordIndex = item.indexOf(dangersView[index])==-1?item.indexOf(dangersView[index].toLowerCase()):item.indexOf(dangersView[index])
+                                        const wordIndex = item.indexOf(dangersView[index])===-1?item.indexOf(dangersView[index].toLowerCase()):item.indexOf(dangersView[index])
                                         const before = item.slice(0,wordIndex)
                                         const after = item.slice(wordIndex+dangersView[index].length)
                                         return(
@@ -150,7 +152,7 @@ export default function ResultsView(){
                                 (<>
                                     <Text style={[styles.detailsSubHeader,{color:"#F1CB61"}]}>CAUTION</Text>
                                     {cautionsDetails.map((item, index) => {
-                                        const wordIndex = item.indexOf(cautionsView[index])==-1?item.indexOf(cautionsView[index].toLowerCase()):item.indexOf(cautionsView[index])
+                                        const wordIndex = item.indexOf(cautionsView[index])===-1?item.indexOf(cautionsView[index].toLowerCase()):item.indexOf(cautionsView[index])
                                         const before = item.slice(0,wordIndex)
                                         const after = item.slice(wordIndex+cautionsView[index].length)
                                         return(

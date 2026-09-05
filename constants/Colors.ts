@@ -39,7 +39,7 @@ export function getColors(darkModeActive: boolean): ThemeColors {
 }
 
 export const createStyles = (colors: ThemeColors) => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.backgroundColor, margin: '5%' },
+    container: { flex: 1, backgroundColor: colors.backgroundColor, margin: '5%', gap: "5%" },
     inputContainer: { backgroundColor: colors.mainDisplaybackgroundColor, borderRadius: buttonBorderRadius, overflow: 'visible', alignItems: 'center', height: '60%', width: '100%' },
     camera: { borderRadius: buttonBorderRadius, overflow: 'hidden', height: '100%', width: '100%' },
     buttonContainer: { position: 'absolute', zIndex: 10, width: 50, height: 50, borderRadius: 999, overflow: 'hidden' },
@@ -52,7 +52,7 @@ export const createStyles = (colors: ThemeColors) => StyleSheet.create({
     manualInputContainer: { flex: 1, flexDirection: 'row', backgroundColor: colors.mainDisplaybackgroundColor, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 20 },
     manualInputButton: { backgroundColor: colors.green2, color: 'white', borderRadius: 999, padding: 8 },
     textInputManual: { fontSize: 18, fontWeight: '700', width: 220, height: 'auto', backgroundColor: colors.mainDisplaybackgroundColor, borderColor: '#959595', borderWidth: buttonBorderWidth, borderRadius: buttonBorderRadius, color: colors.textColor, padding: 11, textAlign: 'center' },
-    animalSelectDropdownContainer: { minHeight: 10 },
+    animalSelectDropdownContainer: { minHeight: 10, height: "7%" },
     animalSelectDropdown: { width: 180, backgroundColor: colors.backgroundColor, borderRadius: buttonBorderRadius },
     animalSelectDropdownItem: { backgroundColor: colors.backgroundColor, width: 180 },
     welcomeInfoText: { color: colors.textColor, fontSize: 14 },

@@ -81,7 +81,7 @@ export default function BarcodeSelection({setScanning}:{setScanning: (scanning: 
                         />
                         <Pressable onPress={() => {
                             Keyboard.dismiss();
-                            if(currentManualCode != ""){
+                            if(currentManualCode !== ""){
                                 setScanning(false)
                                 searchForBarcode(currentManualCode);
                             }
