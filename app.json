@@ -45,7 +45,15 @@
       "expo-font",
       "expo-image",
       "expo-status-bar",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-build-properties",
+      {
+        "android": {
+          "compileSdkVersion": 36,
+          "targetSdkVersion": 36,
+          "minSdkVersion": 24
+        }
+      }
     ],
     "experiments": {
       "typedRoutes": true
