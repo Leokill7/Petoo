@@ -40,7 +40,7 @@ export function AnimalProvider({
             }
         };
         loadSelectableAnimals();
-        //getLastSelectedAnimal();
+        getLastSelectedAnimal();
     }, []);
 
     useEffect(() => {

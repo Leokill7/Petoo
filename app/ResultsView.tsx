@@ -48,6 +48,7 @@ export default function ResultsView(){
 
 
                 let animal = getAnimalObject()
+                if(!animal)return;
 
                 const warnings = getWarningsVariable(selectedProductInfo,animal)
                 if(warnings){

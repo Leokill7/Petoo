@@ -38,6 +38,7 @@ export default function AppNavigator() {
                             <Ionicons name="close" size={28} color={colors.green2} />
                         </Pressable>
                     ),
+                    headerTintColor: colors.green2,
                 }}
             />
             <Stack.Screen
